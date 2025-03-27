@@ -4,16 +4,48 @@ grammar compiladores;
 package proyectocompiladores;
 }
 
-fragment LETRA : [A-Za-z] ;
-fragment DIGITO : [0-9] ;
+// Fragmentos básicos
+fragment DIGITO: [0-9];
+fragment CARACTER: [a-zA-Z];
 
-NUMERO : DIGITO+ ;
-OTRO : . ;
+// Tokens básicos
+NUMERO: DIGITO+;
+ID: (CARACTER | '_') (CARACTER | DIGITO | '_')*;
+PYC: ';';
+IGUAL: '=';
+SUMA: '+';
+RESTA: '-';
+MULT: '*';
+DIV: '/';
+MOD: '%';
+PA: '(';
+PC: ')';
+LLA: '{';
+LLC: '}';
+COMP: '==' | '!=' | '<' | '>' | '<=' | '>=';
+AND: '&&';
+OR: '||';
+WS: [ \t\r\n]+ -> skip;
 
-ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
+// Reglas iniciales
+programa: (bloque | instruccion)* EOF;
 
-s : ID     { System.out.println("ID ->" + $ID.getText() + "<--"); }         s
-  | NUMERO { System.out.println("NUMERO ->" + $NUMERO.getText() + "<--"); } s
-  | OTRO   { System.out.println("Otro ->" + $OTRO.getText() + "<--"); }     s
-  | EOF
-  ;
+bloque: LLA instrucciones? LLC;
+
+instrucciones: (instruccion)*;
+
+instruccion:
+    declaracion
+    | asignacion
+    | expresion PYC
+    ;
+
+declaracion: tipo ID (IGUAL expresion)? PYC;
+
+asignacion: ID IGUAL expresion PYC;
+
+expresion: termino ((SUMA | RESTA | MULT | DIV | MOD | COMP | AND | OR) termino)*;
+
+termino: NUMERO | ID;
+
+tipo: 'int' | 'double' | 'bool';

@@ -13,9 +13,57 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#s}.
+	 * Visit a parse tree produced by {@link compiladoresParser#programa}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitS(compiladoresParser.SContext ctx);
+	T visitPrograma(compiladoresParser.ProgramaContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#bloque}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBloque(compiladoresParser.BloqueContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#instrucciones}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInstrucciones(compiladoresParser.InstruccionesContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#instruccion}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInstruccion(compiladoresParser.InstruccionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#declaracion}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclaracion(compiladoresParser.DeclaracionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#asignacion}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAsignacion(compiladoresParser.AsignacionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#expresion}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpresion(compiladoresParser.ExpresionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#termino}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTermino(compiladoresParser.TerminoContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#tipo}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTipo(compiladoresParser.TipoContext ctx);
 }

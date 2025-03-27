@@ -22,7 +22,7 @@
             "request": "launch", 
             "grammar": "src/main/java/proyectocompiladores/compiladores.g4", 
             "input": "input/entrada.txt", 
-            "startRule": "s", 
+            "startRule": "programa", 
             "printParseTree": true, 
             "visualParseTree": true 
 
