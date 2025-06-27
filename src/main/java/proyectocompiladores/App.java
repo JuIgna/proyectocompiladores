@@ -1,51 +1,51 @@
 package proyectocompiladores;
 
-// import org.antlr.v4.runtime.tree.ParseTree;
-// import org.antlr.v4.runtime.CharStream;
-// import org.antlr.v4.runtime.CharStreams;
-// import org.antlr.v4.runtime.CommonTokenStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import org.antlr.v4.runtime.CharStreams;
+
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CommonTokenStream;
 
 // Las diferentes entradas se explicaran oportunamente
 public class App {
     public static void main(String[] args) throws Exception {
-
-        /*
-                    System.out.println("Hello, Compilador!!!");
-        // create a CharStream that reads from file
+        // leer el input de txt con codico C
         CharStream input = CharStreams.fromFileName("input/entrada.txt");
 
-        // create a lexer that feeds off of input CharStream
         compiladoresLexer lexer = new compiladoresLexer(input);
-        
-        // create a buffer of tokens pulled from the lexer
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        
-        // create a parser that feeds off the tokens buffer
         compiladoresParser parser = new compiladoresParser(tokens);
-                
-        // create Listener
-        compiladoresBaseListener escucha = new Escucha();
 
-        // Conecto el objeto con Listeners al parser
-        parser.addParseListener(escucha);
+        try (PrintWriter escritorErrores = new PrintWriter(new FileWriter("output/errores.txt"))) {
+            ManejadorErrores manejadorErrores = new ManejadorErrores(escritorErrores);
+            parser.removeErrorListeners();
+            parser.addErrorListener(manejadorErrores);
 
-        // Solicito al parser que comience indicando una regla gramatical
-        // En este caso la regla es el simbolo inicial
-        // parser.s();
-        // ParseTree tree =  parser.s();
-        ParseTree tree =  parser.programa(); // Hay que indicarle cual es el simbolo inicial
-        // Conectamos el visitor
-        // Caminante visitor = new Caminante();
-        // visitor.visit(tree);
-        // System.out.println(visitor);
-        // System.out.println(visitor.getErrorNodes());
-        // Imprime el arbol obtenido
-        System.out.println(escucha);
-        // System.out.println(tree.toStringTree(parser));
-        // System.out.println(escucha);         
-          
-         */
+            // Crear el escucha y agregarlo al parser
+            Escucha escucha = new Escucha(escritorErrores);
+            parser.addParseListener(escucha); // Agregar el listener
 
-        
+            // parsea el codigo
+            ParseTree tree = parser.programa();
+
+            // revisa y continua si solo hay warnings
+            if (!escucha.verificarWarnings()) {
+                System.out
+                        .println("Advertencias Detectadas, se reanuda la ejecucion, verifique el archivo errores.txt");
+            }
+
+            if (!escucha.verificarErrores() || !manejadorErrores.verificarErrores()) {
+                System.out.println("Errores Detectados, se reanuda la ejecucion, verifique el archivo errores.txt");
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error al escribir en el archivo de errores: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
+
 }

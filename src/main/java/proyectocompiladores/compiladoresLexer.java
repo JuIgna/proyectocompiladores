@@ -17,12 +17,11 @@ public class compiladoresLexer extends Lexer {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		NUM=1, DOUBLE_NUM=2, TIPO_INT=3, TIPO_DOUBLE=4, TIPO_VOID=5, COND_IF=6, 
-		COND_ELSE=7, CICLO_FOR=8, CICLO_WHILE=9, RETORNO=10, TIPO_BOOL=11, VALOR_TRUE=12, 
-		VALOR_FALSE=13, FUNC_PRINT=14, PUNTO_COMA=15, COMA=16, ASIG=17, SUM=18, 
-		RES=19, MUL=20, DIV=21, MODULO=22, PARENTESIS_A=23, PARENTESIS_C=24, LLAVE_A=25, 
-		LLAVE_C=26, COMP_OP=27, ID=28, PUNTO=29, CADENA=30, AND_OP=31, OR_OP=32, 
-		INCR=33, DECR=34, WS=35;
+		NUMERO=1, DOUBLE_LITERAL=2, INT=3, DOUBLE=4, VOID=5, IF=6, ELSE=7, FOR=8, 
+		WHILE=9, RETURN=10, BOOL=11, TRUE=12, FALSE=13, PRINTF=14, PYC=15, COMA=16, 
+		IGUAL=17, SUMA=18, RESTA=19, MULT=20, DIV=21, MOD=22, PA=23, PC=24, LLA=25, 
+		LLC=26, COMP=27, ID=28, PUNTO=29, STRING=30, AND=31, OR=32, INCREMENTO=33, 
+		DECREMENTO=34, WS=35;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
 	};
@@ -33,12 +32,11 @@ public class compiladoresLexer extends Lexer {
 
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"DIGITO", "LETRA", "NUM", "DOUBLE_NUM", "TIPO_INT", "TIPO_DOUBLE", "TIPO_VOID", 
-			"COND_IF", "COND_ELSE", "CICLO_FOR", "CICLO_WHILE", "RETORNO", "TIPO_BOOL", 
-			"VALOR_TRUE", "VALOR_FALSE", "FUNC_PRINT", "PUNTO_COMA", "COMA", "ASIG", 
-			"SUM", "RES", "MUL", "DIV", "MODULO", "PARENTESIS_A", "PARENTESIS_C", 
-			"LLAVE_A", "LLAVE_C", "COMP_OP", "ID", "PUNTO", "CADENA", "AND_OP", "OR_OP", 
-			"INCR", "DECR", "WS"
+			"DIGITO", "CARACTER", "NUMERO", "DOUBLE_LITERAL", "INT", "DOUBLE", "VOID", 
+			"IF", "ELSE", "FOR", "WHILE", "RETURN", "BOOL", "TRUE", "FALSE", "PRINTF", 
+			"PYC", "COMA", "IGUAL", "SUMA", "RESTA", "MULT", "DIV", "MOD", "PA", 
+			"PC", "LLA", "LLC", "COMP", "ID", "PUNTO", "STRING", "AND", "OR", "INCREMENTO", 
+			"DECREMENTO", "WS"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -54,11 +52,10 @@ public class compiladoresLexer extends Lexer {
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, "NUM", "DOUBLE_NUM", "TIPO_INT", "TIPO_DOUBLE", "TIPO_VOID", "COND_IF", 
-			"COND_ELSE", "CICLO_FOR", "CICLO_WHILE", "RETORNO", "TIPO_BOOL", "VALOR_TRUE", 
-			"VALOR_FALSE", "FUNC_PRINT", "PUNTO_COMA", "COMA", "ASIG", "SUM", "RES", 
-			"MUL", "DIV", "MODULO", "PARENTESIS_A", "PARENTESIS_C", "LLAVE_A", "LLAVE_C", 
-			"COMP_OP", "ID", "PUNTO", "CADENA", "AND_OP", "OR_OP", "INCR", "DECR", 
+			null, "NUMERO", "DOUBLE_LITERAL", "INT", "DOUBLE", "VOID", "IF", "ELSE", 
+			"FOR", "WHILE", "RETURN", "BOOL", "TRUE", "FALSE", "PRINTF", "PYC", "COMA", 
+			"IGUAL", "SUMA", "RESTA", "MULT", "DIV", "MOD", "PA", "PC", "LLA", "LLC", 
+			"COMP", "ID", "PUNTO", "STRING", "AND", "OR", "INCREMENTO", "DECREMENTO", 
 			"WS"
 		};
 	}

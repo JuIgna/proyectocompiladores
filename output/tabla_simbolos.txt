@@ -1,0 +1,17 @@
+Tabla de Símbolos:
+------------------
+Contexto: 0
+------------------
+
+Contexto: 1
+------------------
+Nombre: main, Tipo: VOID
+
+Contexto: 2
+------------------
+Nombre: x, Tipo: INT
+Nombre: i, Tipo: INT
+
+Contexto: 3
+------------------
+

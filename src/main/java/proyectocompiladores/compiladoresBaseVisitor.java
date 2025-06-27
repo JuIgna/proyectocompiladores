@@ -25,7 +25,7 @@ public class compiladoresBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBloqueInstrucciones(compiladoresParser.BloqueInstruccionesContext ctx) { return visitChildren(ctx); }
+	@Override public T visitInstrucciones(compiladoresParser.InstruccionesContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -53,7 +53,7 @@ public class compiladoresBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDefFuncion(compiladoresParser.DefFuncionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -67,7 +67,7 @@ public class compiladoresBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBloqueFuncion(compiladoresParser.BloqueFuncionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -81,7 +81,7 @@ public class compiladoresBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitParam(compiladoresParser.ParamContext ctx) { return visitChildren(ctx); }
+	@Override public T visitParametro(compiladoresParser.ParametroContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -95,21 +95,21 @@ public class compiladoresBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDefinicion(compiladoresParser.DefinicionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDeclaracion(compiladoresParser.DeclaracionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAsignar(compiladoresParser.AsignarContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAsignacion(compiladoresParser.AsignacionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitControlFlujo(compiladoresParser.ControlFlujoContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEstructuraControl(compiladoresParser.EstructuraControlContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -200,6 +200,13 @@ public class compiladoresBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitOp_aritmeticos(compiladoresParser.Op_aritmeticosContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitOp_logicas(compiladoresParser.Op_logicasContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -235,5 +242,5 @@ public class compiladoresBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitRetorno(compiladoresParser.RetornoContext ctx) { return visitChildren(ctx); }
+	@Override public T visitReturn(compiladoresParser.ReturnContext ctx) { return visitChildren(ctx); }
 }

@@ -1,97 +1,95 @@
 grammar compiladores;
-
- @header { package proyectocompiladores; }
-
+@header { package proyectocompiladores; }
 
 fragment DIGITO: [0-9];
-fragment LETRA: [a-zA-Z];
+fragment CARACTER: [a-zA-Z];
 
-NUM: DIGITO+;
-DOUBLE_NUM: DIGITO+ '.' DIGITO* | DIGITO* '.' DIGITO+;
+NUMERO: DIGITO+;
+DOUBLE_LITERAL: DIGITO+ '.' DIGITO* | DIGITO* '.' DIGITO+;
 
-TIPO_INT: 'int';
-TIPO_DOUBLE: 'double';
-TIPO_VOID: 'void';
-COND_IF: 'if';
-COND_ELSE: 'else';
-CICLO_FOR: 'for';
-CICLO_WHILE: 'while';
-RETORNO: 'return';
-TIPO_BOOL: 'bool';
-VALOR_TRUE: 'true';
-VALOR_FALSE: 'false';
-FUNC_PRINT: 'printf';
+INT: 'int';
+DOUBLE: 'double';
+VOID: 'void';
+IF: 'if';
+ELSE: 'else';
+FOR: 'for';
+WHILE: 'while';
+RETURN: 'return';
+BOOL: 'bool';
+TRUE: 'true';
+FALSE: 'false';
+PRINTF: 'printf';
 
-PUNTO_COMA: ';';
+PYC: ';';
 COMA: ',';
-ASIG: '=';
-SUM: '+';
-RES: '-';
-MUL: '*';
+IGUAL: '=';
+SUMA: '+';
+RESTA: '-';
+MULT: '*';
 DIV: '/';
-MODULO: '%';
-PARENTESIS_A: '(';
-PARENTESIS_C: ')';
-LLAVE_A: '{';
-LLAVE_C: '}';
-COMP_OP: '==' | '!=' | '<' | '>' | '<=' | '>=';
-ID: (LETRA | '_') (LETRA | DIGITO | '_')*;
+MOD: '%';
+PA: '(';
+PC: ')';
+LLA: '{';
+LLC: '}';
+COMP: '==' | '!=' | '<' | '>' | '<=' | '>=';
+ID: (CARACTER | '_') (CARACTER | DIGITO | '_')*;
 PUNTO: '.';
-CADENA: '"' (~["\\] | '\\' .)* '"';
-AND_OP: '&&';
-OR_OP: '||';
-INCR: SUM SUM;
-DECR: RES RES;
+STRING: '"' ( ~["\\] | '\\' .)* '"';
+AND: '&&';
+OR: '||';
+INCREMENTO: SUMA SUMA;
+DECREMENTO: RESTA RESTA;
 
 WS: [ \t\r\n]+ -> skip;
 
-programa: (bloqueFuncion | instruccion)* EOF;
+programa: (cuerpoFuncion | instruccion)* EOF;
 
-bloqueInstrucciones: (instruccion)*;
+instrucciones: (instruccion)*;
 
 instruccion:
-    defFuncion
-    | bloque
-    | definicion
-    | asignar
-    | controlFlujo
-    | llamadaFuncion PUNTO_COMA
-    | expresion PUNTO_COMA
-    | retorno
-    ;
+	declaracionFuncion
+	| bloque
+	| declaracion
+	| asignacion
+	| estructuraControl
+	| llamadaFuncion PYC
+	| expresion PYC
+	| return
+	;
 
-bloque: LLAVE_A bloqueInstrucciones? LLAVE_C;
+bloque: LLA instrucciones? LLC;
 
-error: ~LLAVE_C+;
+error: ~LLC+;
 
-defFuncion: tipo ID PARENTESIS_A parametros? PARENTESIS_C PUNTO_COMA;
+declaracionFuncion: tipo ID PA parametros? PC PYC;
 
-llamadaFuncion: ID PARENTESIS_A (expresion (COMA expresion)*)? PARENTESIS_C;
+llamadaFuncion: ID PA (expresion (COMA expresion)*)? PC;
 
-bloqueFuncion: tipo ID PARENTESIS_A parametros? PARENTESIS_C bloque;
+cuerpoFuncion: tipo ID PA parametros? PC bloque;
 
-parametros: param (COMA param)*;
+parametros: parametro (COMA parametro)*;
 
-param: tipo ID;
+parametro: tipo ID;
 
-tipo: TIPO_INT | TIPO_DOUBLE | TIPO_BOOL | TIPO_VOID;
+tipo: INT | DOUBLE | BOOL | VOID;
 
-definicion: tipo ID (ASIG expresion)? PUNTO_COMA;
+declaracion: tipo ID (IGUAL expresion)? PYC;
 
-asignar: ID ASIG expresion PUNTO_COMA;
+asignacion: ID IGUAL expresion PYC;
 
-controlFlujo: ifElse | whileLoop | forLoop;
+estructuraControl: ifElse | whileLoop | forLoop;
 
-ifElse: COND_IF PARENTESIS_A expresion PARENTESIS_C bloque (COND_ELSE bloque)?;
+ifElse: IF PA expresion PC bloque (ELSE bloque)?;
 
-whileLoop: CICLO_WHILE PARENTESIS_A expresion PARENTESIS_C bloque;
+whileLoop: WHILE PA expresion PC bloque;
 
 forLoop:
-    CICLO_FOR PARENTESIS_A inicializacion PUNTO_COMA? condicion? PUNTO_COMA actualizacion? PARENTESIS_C bloque;
+    FOR PA inicializacion PYC? condicion? PYC actualizacion? PC bloque;
 
 inicializacion:
-    definicion
-    | asignar
+    declaracion
+    | asignacion
     |
     ;
 
@@ -101,45 +99,57 @@ condicion:
     ;
 
 actualizacion:
-    (asignar | incrementoDecremento) (COMA (asignar | incrementoDecremento))*;
+    (asignacion | incrementoDecremento) (COMA (asignacion | incrementoDecremento))*;
+
 
 expresion:
     expresionLogica
     ;
 
 expresionLogica:
-    expresionComparacion (op_logicas expresionComparacion)*;
+    expresionComparacion (op_logicas expresionComparacion)*
+    ;
 
 expresionComparacion:
-    expresionAritmetica (COMP_OP expresionAritmetica)?;
+    expresionAritmetica (COMP expresionAritmetica)?
+    ;
 
 expresionAritmetica:
-    termino ((SUM | RES) termino)*;
+    termino ((SUMA | RESTA) termino)*
+    ;
 
 termino:
-    factor ((MUL | DIV | MODULO) factor)*;
+    factor ((MULT | DIV | MOD) factor)*
+    ;
 
 factor:
-    PARENTESIS_A expresion PARENTESIS_C
+    PA expresion PC
     | booleano
     | ID
-    | CADENA
+    | STRING
     | llamadaPrints
     | llamadaFuncion
     | incrementoDecremento
-    | RES? NUM
-    | DOUBLE_NUM
+    | RESTA? NUMERO
+    | DOUBLE_LITERAL
     ;
 
-op_logicas: AND_OP | OR_OP;
+op_aritmeticos: SUMA | RESTA | MULT | DIV | MOD;
+
+op_logicas: AND | OR;
+
+
+
 
 llamadaPrints:
-    FUNC_PRINT PARENTESIS_A ((CADENA (COMA expresion)* | expresion))? PARENTESIS_C;
+	PRINTF PA ((STRING (COMA expresion)* | expresion))? PC;
 
 argumentos: expresion (COMA expresion)*;
 
-booleano: VALOR_TRUE | VALOR_FALSE;
+booleano: TRUE | FALSE;
 
-incrementoDecremento: ID (INCR | DECR);
+incrementoDecremento: ID (INCREMENTO | DECREMENTO);
 
-retorno: RETORNO expresion? PUNTO_COMA;
+return: RETURN expresion? PYC
+        ;
+

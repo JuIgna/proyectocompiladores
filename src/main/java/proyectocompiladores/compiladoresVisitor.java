@@ -17,11 +17,11 @@ public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPrograma(compiladoresParser.ProgramaContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#bloqueInstrucciones}.
+	 * Visit a parse tree produced by {@link compiladoresParser#instrucciones}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBloqueInstrucciones(compiladoresParser.BloqueInstruccionesContext ctx);
+	T visitInstrucciones(compiladoresParser.InstruccionesContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link compiladoresParser#instruccion}.
 	 * @param ctx the parse tree
@@ -41,11 +41,11 @@ public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitError(compiladoresParser.ErrorContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#defFuncion}.
+	 * Visit a parse tree produced by {@link compiladoresParser#declaracionFuncion}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDefFuncion(compiladoresParser.DefFuncionContext ctx);
+	T visitDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link compiladoresParser#llamadaFuncion}.
 	 * @param ctx the parse tree
@@ -53,11 +53,11 @@ public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitLlamadaFuncion(compiladoresParser.LlamadaFuncionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#bloqueFuncion}.
+	 * Visit a parse tree produced by {@link compiladoresParser#cuerpoFuncion}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBloqueFuncion(compiladoresParser.BloqueFuncionContext ctx);
+	T visitCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link compiladoresParser#parametros}.
 	 * @param ctx the parse tree
@@ -65,11 +65,11 @@ public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitParametros(compiladoresParser.ParametrosContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#param}.
+	 * Visit a parse tree produced by {@link compiladoresParser#parametro}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitParam(compiladoresParser.ParamContext ctx);
+	T visitParametro(compiladoresParser.ParametroContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link compiladoresParser#tipo}.
 	 * @param ctx the parse tree
@@ -77,23 +77,23 @@ public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTipo(compiladoresParser.TipoContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#definicion}.
+	 * Visit a parse tree produced by {@link compiladoresParser#declaracion}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDefinicion(compiladoresParser.DefinicionContext ctx);
+	T visitDeclaracion(compiladoresParser.DeclaracionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#asignar}.
+	 * Visit a parse tree produced by {@link compiladoresParser#asignacion}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAsignar(compiladoresParser.AsignarContext ctx);
+	T visitAsignacion(compiladoresParser.AsignacionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#controlFlujo}.
+	 * Visit a parse tree produced by {@link compiladoresParser#estructuraControl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitControlFlujo(compiladoresParser.ControlFlujoContext ctx);
+	T visitEstructuraControl(compiladoresParser.EstructuraControlContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link compiladoresParser#ifElse}.
 	 * @param ctx the parse tree
@@ -167,6 +167,12 @@ public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFactor(compiladoresParser.FactorContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#op_aritmeticos}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOp_aritmeticos(compiladoresParser.Op_aritmeticosContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link compiladoresParser#op_logicas}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -197,9 +203,9 @@ public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIncrementoDecremento(compiladoresParser.IncrementoDecrementoContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link compiladoresParser#retorno}.
+	 * Visit a parse tree produced by {@link compiladoresParser#return}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRetorno(compiladoresParser.RetornoContext ctx);
+	T visitReturn(compiladoresParser.ReturnContext ctx);
 }

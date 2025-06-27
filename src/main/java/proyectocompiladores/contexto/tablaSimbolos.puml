@@ -1,7 +1,5 @@
 @@startuml tablaSimbolos
 
-
-
 enum TipoDato <<enum>> {
     + INT 
     + String
