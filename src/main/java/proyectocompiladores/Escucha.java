@@ -402,6 +402,7 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void exitIfElse(compiladoresParser.IfElseContext ctx) {
+        
         // revisar si el bloque del if existe
         if (ctx.bloque(0) == null) {
             System.err.println("ERROR: Falta el bloque de código para el IF.");
@@ -420,8 +421,7 @@ public class Escucha extends compiladoresBaseListener {
             BalanceLlaves--;
         }
 
-        if (ctx.PA() == null || ctx.PC() == null ||
-                ctx.PA().getText().contains("missing") || ctx.PC().getText().contains("missing")) {
+        if (ctx.PA() == null || ctx.PC() == null || ctx.PA().getText().contains("missing") || ctx.PC().getText().contains("missing")) {
 
             System.err.println("ERROR: Paréntesis desbalanceados o faltantes en el bloque IF.");
         } else {
