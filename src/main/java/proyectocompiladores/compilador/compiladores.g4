@@ -74,7 +74,9 @@ parametro: tipo ID;
 
 tipo: INT | DOUBLE | BOOL | VOID;
 
-declaracion: tipo ID (IGUAL expresion)? PYC;
+//  declaracion: tipo ID (IGUAL expresion)? PYC;
+ declaracion: tipo declarador (COMA declarador)* PYC; 
+ declarador: ID (IGUAL expresion)?;
 
 asignacion: ID IGUAL expresion PYC;
 
@@ -85,17 +87,15 @@ ifElse: IF PA expresion PC bloque (ELSE bloque)?;
 whileLoop: WHILE PA expresion PC bloque;
 
 forLoop:
-    FOR PA inicializacion PYC? condicion? PYC actualizacion? PC bloque;
+    FOR PA inicializacion? PYC condicion? PYC actualizacion? PC bloque;
 
 inicializacion:
     declaracion
     | asignacion
-    |
     ;
 
 condicion:
     expresion
-    |
     ;
 
 actualizacion:

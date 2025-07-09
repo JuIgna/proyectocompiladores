@@ -15,12 +15,14 @@ public class ManejadorErrores extends BaseErrorListener {
     }
 
     @Override
-    public void syntaxError(Recognizer<?, ?> recognizer,
+    public void syntaxError(
+            Recognizer<?, ?> recognizer,
             Object simboloOfensivo,
             int linea,
             int posicionEnLinea,
             String mensaje,
             RecognitionException e) {
+                
         String tipoError = "Error sintáctico";
         if (mensaje.contains("missing ';'")) {
             tipoError = "Error sintáctico: Falta de un punto y coma";

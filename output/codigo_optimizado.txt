@@ -1,11 +1,29 @@
+function suma (void):
+returnt0 = valor1 + valor2;
+t0;
+end function
 function main (void):
-x = 1;
+x = 0;
+call suma (1, 2);
+t1 = return;
+y = null;
+z = 0;
+a = 0;
+b = 0;
 i = 1;
-t0 = i > 5;
+t2 = i > 5;
 L0:
-if t0 goto L1;
+if t2 goto L1;
 goto L2:
 L1:
 goto L0;
 L2:
+t3 = x == 0;
+if t3 goto L3;
+x = 2;
+goto L4;
+L3:
+goto L5
+L4:
+L5:
 end function

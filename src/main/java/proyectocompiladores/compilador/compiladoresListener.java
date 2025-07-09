@@ -128,6 +128,16 @@ public interface compiladoresListener extends ParseTreeListener {
 	 */
 	void exitDeclaracion(compiladoresParser.DeclaracionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link compiladoresParser#declarador}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclarador(compiladoresParser.DeclaradorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link compiladoresParser#declarador}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclarador(compiladoresParser.DeclaradorContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link compiladoresParser#asignacion}.
 	 * @param ctx the parse tree
 	 */

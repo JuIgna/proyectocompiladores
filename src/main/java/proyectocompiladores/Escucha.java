@@ -62,36 +62,43 @@ public class Escucha extends compiladoresBaseListener {
         }
     }
 
-    @Override
-    public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
-        String tipo = ctx.tipo().getText();
-        TipoDato tipoDato;
-        try {
-            tipoDato = TipoDato.valueOf(tipo.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return;
-        }
+@Override
+public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
+    String tipo = ctx.tipo().getText();
+    TipoDato tipoDato;
+    try {
+        tipoDato = TipoDato.valueOf(tipo.toUpperCase());
+    } catch (IllegalArgumentException e) {
+        errores++;
+        escritorErrores.println("Error semántico: Tipo inválido '" + tipo + "'. En línea: " + ctx.getStart().getLine());
+        return;
+    }
 
-        String nombre = ctx.ID().getText();
+    // Procesar cada declarador
+    for (compiladoresParser.DeclaradorContext decl : ctx.declarador()) {
+        String nombre = decl.ID().getText();
         Identificador identificador = new Identificador(nombre, tipoDato);
 
+        // Verificar si el identificador ya está declarado
         if (tablaSimbolos.buscarIdentificador(identificador) == null) {
             tablaSimbolos.addIdentificador(identificador);
-            System.out.println("Identificador:  " + identificador.getNombre());
-        } else {
-            errores++;
-            escritorErrores.println("Error semántico: Identificador '" + nombre + "' ya ha sido declarado. En linea: "
-                    + ctx.ID().getSymbol().getLine());
-        }
+            System.out.println("Identificador: " + identificador.getNombre());
 
-        if (ctx.expresion() != null) {
-            tablaSimbolos.identificadorInicializado(identificador);
+            // Verificar si está inicializado
+            if (decl.expresion() != null) {
+                tablaSimbolos.identificadorInicializado(identificador);
+            } else {
+                errores++;
+                escritorErrores.println("Error semántico: Identificador '" + nombre
+                        + "' no ha sido inicializado. En línea: " + decl.ID().getSymbol().getLine());
+            }
         } else {
             errores++;
-            escritorErrores.println("Error semántico: Identificador '" + nombre
-                    + "' no ha sido inicializado. En linea: " + ctx.ID().getSymbol().getLine());
+            escritorErrores.println("Error semántico: Identificador '" + nombre + "' ya ha sido declarado. En línea: "
+                    + decl.ID().getSymbol().getLine());
         }
     }
+}
 
     @Override
     public void exitAsignacion(compiladoresParser.AsignacionContext ctx) {

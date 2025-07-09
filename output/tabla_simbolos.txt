@@ -9,9 +9,25 @@ Nombre: main, Tipo: VOID
 
 Contexto: 2
 ------------------
+Nombre: a, Tipo: INT
+Nombre: b, Tipo: INT
 Nombre: x, Tipo: INT
+Nombre: y, Tipo: INT
 Nombre: i, Tipo: INT
+Nombre: z, Tipo: INT
 
 Contexto: 3
+------------------
+
+Contexto: 4
+------------------
+
+Contexto: 5
+------------------
+Nombre: suma, Tipo: VOID
+Nombre: valor1, Tipo: INT
+Nombre: valor2, Tipo: INT
+
+Contexto: 6
 ------------------
 

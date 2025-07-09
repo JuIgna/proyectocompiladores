@@ -26,23 +26,25 @@ public class Caminante extends compiladoresBaseVisitor<String> {
         return codigoTresDirecciones.toString();
     }
 
-    @Override
-    public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
-        String tipo = ctx.tipo().getText();
-        String nombre = ctx.ID().getText();
-        String expresion = ctx.expresion() != null ? visit(ctx.expresion()) : "0";
+@Override
+public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
+    String tipo = ctx.tipo().getText();
+    StringBuilder resultado = new StringBuilder();
 
-        if (ctx.expresion() != null) {
-            String temp = visit(ctx.expresion());
-            if (temp != null) {
-                codigoTresDirecciones.append(nombre).append(" = ").append(temp).append(";\n");
-            }
+    for (compiladoresParser.DeclaradorContext decl : ctx.declarador()) {
+        String nombre = decl.ID().getText();
+        String expresion = decl.expresion() != null ? visit(decl.expresion()) : "0";
+
+        if (decl.expresion() != null) {
+            codigoTresDirecciones.append(nombre).append(" = ").append(expresion).append(";\n");
         } else {
             codigoTresDirecciones.append(nombre).append(" = 0;\n");
         }
-
-        return tipo + " " + nombre + " = " + expresion + ";";
+        resultado.append(tipo).append(" ").append(nombre).append(" = ").append(expresion).append(";");
     }
+
+    return resultado.toString();
+}
 
     @Override
     public String visitAsignacion(compiladoresParser.AsignacionContext ctx) {
