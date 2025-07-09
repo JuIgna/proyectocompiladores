@@ -17,15 +17,15 @@ void main () {
     /* 
         hago pruebas con estructuras de control
         incrementos
-        llamadas a funcion
-    */
-
     for (int i=1; i > 5; i++){
         x++;
     }
-    
+        llamadas a funcion
+    */
     if (x == 0) x = 2;
 
+
+    
     if (y < 1 ){
         z++;
     }

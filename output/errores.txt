@@ -2,6 +2,5 @@ Error sintáctico en línea 11:16 - no viable alternative at input 'intarreglo2'
 Error semántico: Identificador 'z' no ha sido inicializado. En línea: 13
 Error semántico: Identificador 'a' no ha sido inicializado. En línea: 13
 Error semántico: Identificador 'b' no ha sido inicializado. En línea: 13
-Error sintáctico: Falta de un punto y coma en línea 23:18 - missing ';' at 'i'
-Error: Falta '{' para abrir un bloque en la línea 27 en línea 27:16 - missing '{' at 'x'
+Error: Falta '{' para abrir un bloque en la línea 25 en línea 25:16 - missing '{' at 'x'
 Error: Falta '}' para cerrar un bloque en la línea 34 en línea 34:0 - missing '}' at '<EOF>'
