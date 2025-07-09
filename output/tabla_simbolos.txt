@@ -24,10 +24,13 @@ Contexto: 4
 
 Contexto: 5
 ------------------
+
+Contexto: 6
+------------------
 Nombre: suma, Tipo: VOID
 Nombre: valor1, Tipo: INT
 Nombre: valor2, Tipo: INT
 
-Contexto: 6
+Contexto: 7
 ------------------
 

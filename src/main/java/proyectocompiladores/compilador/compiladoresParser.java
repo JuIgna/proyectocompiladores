@@ -21,7 +21,7 @@ public class compiladoresParser extends Parser {
 		WHILE=9, RETURN=10, BOOL=11, TRUE=12, FALSE=13, PRINTF=14, PYC=15, COMA=16, 
 		IGUAL=17, SUMA=18, RESTA=19, MULT=20, DIV=21, MOD=22, PA=23, PC=24, LLA=25, 
 		LLC=26, COMP=27, ID=28, PUNTO=29, STRING=30, AND=31, OR=32, INCREMENTO=33, 
-		DECREMENTO=34, WS=35;
+		DECREMENTO=34, WS=35, LC=36, BC=37;
 	public static final int
 		RULE_programa = 0, RULE_instrucciones = 1, RULE_instruccion = 2, RULE_bloque = 3, 
 		RULE_error = 4, RULE_declaracionFuncion = 5, RULE_llamadaFuncion = 6, 
@@ -61,7 +61,7 @@ public class compiladoresParser extends Parser {
 			"FOR", "WHILE", "RETURN", "BOOL", "TRUE", "FALSE", "PRINTF", "PYC", "COMA", 
 			"IGUAL", "SUMA", "RESTA", "MULT", "DIV", "MOD", "PA", "PC", "LLA", "LLC", 
 			"COMP", "ID", "PUNTO", "STRING", "AND", "OR", "INCREMENTO", "DECREMENTO", 
-			"WS"
+			"WS", "LC", "BC"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -496,7 +496,7 @@ public class compiladoresParser extends Parser {
 				setState(106); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 68652367870L) != 0) );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 274810798078L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -2561,7 +2561,7 @@ public class compiladoresParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\u0004\u0001#\u0140\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
+		"\u0004\u0001%\u0140\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
 		"\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004\u0002"+
 		"\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0002\u0007\u0007\u0007\u0002"+
 		"\b\u0007\b\u0002\t\u0007\t\u0002\n\u0007\n\u0002\u000b\u0007\u000b\u0002"+

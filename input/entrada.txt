@@ -5,12 +5,20 @@ void suma (int valor1, int valor2){
 
 
 void main () {
+    // declaro variables
+
     int x = 0;
     int arreglo[2];
     int y = suma(1, 2);
     int z, a, b;
 
     x++;
+
+    /* 
+        hago pruebas con estructuras de control
+        incrementos
+        llamadas a funcion
+    */
 
     for (int i=1; i > 5; i++){
         x++;

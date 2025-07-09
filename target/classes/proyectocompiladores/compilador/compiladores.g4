@@ -43,6 +43,10 @@ DECREMENTO: RESTA RESTA;
 
 WS: [ \t\r\n]+ -> skip;
 
+// ignorar comentarios
+LC: '//' ~[\r\n]* -> skip;
+BC: '/*' .*? '*/' -> skip;
+
 programa: (cuerpoFuncion | instruccion)* EOF;
 
 instrucciones: (instruccion)*;
