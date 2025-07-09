@@ -13,7 +13,7 @@ public class Contexto {
         this.identificadores = new HashMap<>();
     }
 
-    // añadir un identificador al contexto
+    // añadir un identificador al contexto actual
     public void addIdentificador(Identificador identificador) {
         identificadores.put(identificador.nombre, identificador);
     }

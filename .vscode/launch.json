@@ -20,7 +20,7 @@
             "name": "Debug ANTLR4 grammar", 
             "type": "antlr-debug", 
             "request": "launch", 
-            "grammar": "src/main/java/proyectocompiladores/compiladores.g4", 
+            "grammar": "src/main/java/proyectocompiladores/compilador/compiladores.g4", 
             "input": "input/entrada.txt", 
             "startRule": "programa", 
             "printParseTree": true, 

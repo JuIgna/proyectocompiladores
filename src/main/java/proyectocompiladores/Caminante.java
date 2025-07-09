@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import proyectocompiladores.compilador.compiladoresBaseVisitor;
+import proyectocompiladores.compilador.compiladoresParser;
 import proyectocompiladores.contexto.TipoDato;
 
 public class Caminante extends compiladoresBaseVisitor<String> {

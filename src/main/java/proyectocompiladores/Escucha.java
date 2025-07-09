@@ -5,6 +5,9 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
 
+import proyectocompiladores.compilador.compiladoresBaseListener;
+import proyectocompiladores.compilador.compiladoresParser;
+
 import proyectocompiladores.contexto.Contexto;
 import proyectocompiladores.contexto.TablaSimbolos;
 import proyectocompiladores.contexto.Identificador;
@@ -427,7 +430,6 @@ public class Escucha extends compiladoresBaseListener {
         } else {
             System.out.println("Paréntesis correctos: " + ctx.PA().getText() + " ... " + ctx.PC().getText());
         }
-        ;
 
         if (ctx.ELSE() != null) {
             if (ctx.bloque(1) == null) {
