@@ -1,17 +1,63 @@
-function suma (void):
-returnt0 = valor1 + valor2;
- t0;
+variableGlobal = 10;
+function suma:
+t0 = valor1 + valor2;
+suma = t0;
+return suma;
 end function
-function main (void):
+function sumaDividida:
+t1 = valor / 2;
+sumaDividida = t1;
+return sumaDividida;
+end function
+function asignarNumero (void):
+numero = 20;
+return numero;
+end function
+function asignarNumero:
+numero = 20;
+return numero;
+end function
+function asignarNumero:
+numero = 20.15;
+return numero;
+end function
+function main:
 x = 0;
-call suma (1, 2);
-t1 = return;
-y = null;
-t2 = y < 1;
-if t2 goto L0;
+y = 2;
+z = 1;
+suma = 0;
+bandera = 1;
+sumaDividida = 0.00;
+call asignarNumero;
+t2 = return;
+numero = null;
+call suma (x, y);
+t3 = return;
+suma = null;
+t4 = suma > 5;
+if t4 goto L0;
 goto L1;
 L0:
 goto L2
 L1:
 L2:
+t5 = bandera == 1;
+L3:
+if t5 goto L4;
+goto L5;
+L4:
+t6 = sumador <= 100;
+if t6 goto L6;
+bandera = 0;
+call sumaDividida (sumaDividida);
+t7 = return;
+sumaDividida = null;
+goto L7;
+L6:
+goto L8
+L7:
+L8:
+goto L3;
+L5:
+return 1;
 end function

@@ -83,5 +83,10 @@ public class TablaSimbolos {
         return contextos.get(contextos.size() - 1);
     }
 
+    public int funcionRandom (int a,  int b){
+
+        return a + b;
+    }
+
     
 }

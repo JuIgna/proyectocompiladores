@@ -1,0 +1,57 @@
+int cuadrado(int x) {
+    return x * x;
+}
+
+
+
+/* 
+void suma (int valor1, int valor2){
+    int suma = valor1 + valor2;
+    return suma;
+}
+
+int main () {
+    // declaro variables
+
+    int x = 0;
+    int arreglo[2];
+    int y = suma(1, 2);
+    int z, a, b;
+
+    x++;
+
+    /* 
+        hago pruebas con estructuras de control
+        incrementos
+    for (int i=1; i > 5; i++){
+        x++;
+    }
+        llamadas a funcion
+    */
+    if (x == 0) x = 2;
+
+
+    
+    if (y < 1 ){
+        z++;
+    }
+
+    return 0;
+}
+
+*/
+
+
+
+
+
+
+int main () {
+    int x = 0, y;
+    x = 2;
+    y = 3;
+
+    int z = x + y;
+
+    return 0;
+}

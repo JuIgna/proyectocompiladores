@@ -1,33 +1,6 @@
-void suma (int valor1, int valor2){
-    return valor1 + valor2;
-}
+// ejercicio 5
+// x = y + z
 
 
-
-void main () {
-    // declaro variables
-
-    int x = 0;
-    int arreglo[2];
-    int y = suma(1, 2);
-    int z, a, b;
-
-    x++;
-
-    /* 
-        hago pruebas con estructuras de control
-        incrementos
-    for (int i=1; i > 5; i++){
-        x++;
-    }
-        llamadas a funcion
-    */
-    if (x == 0) x = 2;
-
-
-    
-    if (y < 1 ){
-        z++;
-    }
-}
-
+// ejercicio 14
+if (x > y)

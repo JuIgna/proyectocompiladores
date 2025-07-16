@@ -2,18 +2,21 @@ Tabla de Símbolos:
 ------------------
 Contexto: 0
 ------------------
+Nombre: variableGlobal, Tipo: INT
 
 Contexto: 1
 ------------------
-Nombre: main, Tipo: VOID
+Nombre: main, Tipo: INT
 
 Contexto: 2
 ------------------
-Nombre: a, Tipo: INT
-Nombre: b, Tipo: INT
+Nombre: suma, Tipo: INT
+Nombre: numero, Tipo: INT
+Nombre: sumaDividida, Tipo: DOUBLE
 Nombre: x, Tipo: INT
 Nombre: y, Tipo: INT
 Nombre: z, Tipo: INT
+Nombre: bandera, Tipo: INT
 
 Contexto: 3
 ------------------
@@ -23,10 +26,50 @@ Contexto: 4
 
 Contexto: 5
 ------------------
-Nombre: suma, Tipo: VOID
-Nombre: valor1, Tipo: INT
-Nombre: valor2, Tipo: INT
 
 Contexto: 6
 ------------------
+
+Contexto: 7
+------------------
+Nombre: asignarNumero, Tipo: DOUBLE
+
+Contexto: 8
+------------------
+Nombre: numero, Tipo: DOUBLE
+
+Contexto: 9
+------------------
+Nombre: asignarNumero, Tipo: INT
+
+Contexto: 10
+------------------
+Nombre: numero, Tipo: INT
+
+Contexto: 11
+------------------
+Nombre: asignarNumero, Tipo: VOID
+
+Contexto: 12
+------------------
+Nombre: numero, Tipo: INT
+
+Contexto: 13
+------------------
+Nombre: sumaDividida, Tipo: DOUBLE
+Nombre: valor, Tipo: DOUBLE
+
+Contexto: 14
+------------------
+Nombre: sumaDividida, Tipo: DOUBLE
+
+Contexto: 15
+------------------
+Nombre: suma, Tipo: INT
+Nombre: valor1, Tipo: INT
+Nombre: valor2, Tipo: INT
+
+Contexto: 16
+------------------
+Nombre: suma, Tipo: INT
 

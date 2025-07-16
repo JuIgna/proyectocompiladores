@@ -1,0 +1,127 @@
+// Archivo de prueba SIN errores - SÚPER SIMPLE
+// Compatible con la gramática básica
+
+// Variables globales
+int contadorGlobal;
+double valorPi;
+char inicial;
+bool activo;
+
+// Función simple que retorna valor
+int sumar(int a, int b) {
+    int resultado;
+    resultado = a + b;
+    contadorGlobal = contadorGlobal + 1;
+    return resultado;
+}
+
+// Función main
+int main() {
+    int estado;
+    int temp;
+    int numeros[3];
+    
+    // Inicializar variables globales
+    contadorGlobal = 0;
+    valorPi = 3.14;
+    inicial = 'M';
+    
+    // Usar arrays
+    numeros[0] = 10;
+    numeros[1] = 20;
+    numeros[2] = 30;
+    
+    // Operaciones básicas
+    temp = numeros[0] + numeros[1];
+    temp = temp * 2;
+    temp = temp / 3;
+    temp = temp % 5;
+    
+    // Usar función que retorna valor
+    estado = sumar(temp, 5);
+    
+    // Usar variables globales
+    contadorGlobal = estado;
+    valorPi = temp;
+    inicial = 'X';
+    
+    // Estructuras de control básicas
+    if (estado > 0) {
+        int auxiliar;
+        auxiliar = estado + 10;
+        estado = auxiliar;
+    }
+    
+    return estado;
+}
+
+
+
+
+************ entrada main
+
+// Codigo de entrada para probar el compilador y resultados devueltos
+int variableGlobal = 10;
+
+int suma (int valor1, int valor2) {
+    int suma = valor1 + valor2;
+
+    return suma;
+}
+
+double sumaDividida (double valor){
+    double sumaDividida = valor / 2;
+
+    return sumaDividida;
+}
+
+void asignarNumero (){
+    int numero = 20;
+
+    return numero;
+}
+
+int asignarNumero (){
+    int numero = 20; 
+    return numero;
+}
+
+double asignarNumero (){
+    double numero = 20.15;
+    return numero;
+}
+
+
+if (4 > 5){
+    printf ("La suma es mayor a 5");
+} else {
+    printf ("La suma es menor a 5");
+}
+
+
+int main () {
+    int x=0, y=2, z = 1, suma = 0, bandera = 1;
+    double sumaDividida = 0.00;
+    int numero = asignarNumero ();
+
+    suma = suma (x, y);
+
+    if (suma > 5){
+        printf ("La suma es mayor a 5");
+    } else {
+        printf ("La suma es menor a 5");
+    }
+
+
+    printf ("Resultado del sumador: %d", sumador);
+
+    while (bandera == 1){
+        if (sumador <= 100){
+            bandera = 0;
+            sumaDividida = sumaDividida (sumaDividida);
+        }
+    }
+
+    return 1;
+
+}

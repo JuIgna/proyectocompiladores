@@ -18,6 +18,10 @@ public class Escucha extends compiladoresBaseListener {
     private PrintWriter escritorErrores;
     private int errores = 0;
     private int warnings = 0;
+    private int BalanceLlaves = 0;
+    private int BalanceParentesis = 0;
+    private List<Contexto> contextoAuxiliar = new ArrayList<Contexto>();
+
 
     Escucha(PrintWriter escritorErrores) {
         this.escritorErrores = escritorErrores;
@@ -36,8 +40,6 @@ public class Escucha extends compiladoresBaseListener {
         tablaSimbolos.addContexto();
     }
 
-    private int BalanceLlaves = 0;
-    private int BalanceParentesis = 0;
 
     @Override
     public void exitParametro(compiladoresParser.ParametroContext ctx) {
@@ -293,7 +295,6 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
         tablaSimbolos.addContexto();
     }
 
-    private List<Contexto> contextoAuxiliar = new ArrayList<Contexto>();
 
     @Override
     public void exitBloque(compiladoresParser.BloqueContext ctx) {

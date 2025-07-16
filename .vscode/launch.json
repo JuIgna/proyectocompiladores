@@ -16,13 +16,15 @@
 
         }, 
         { 
+            // nota: actualizar el grammar si se busca usar la herramienta del arbol para otras reglas de antlr4
 
             "name": "Debug ANTLR4 grammar", 
             "type": "antlr-debug", 
             "request": "launch", 
-            "grammar": "src/main/java/proyectocompiladores/compilador/compiladores.g4", 
+            //"grammar": "src/main/java/proyectocompiladores/compilador/compiladores.g4",
+            "grammar": "src/main/java/proyectocompiladores/compilador/practicaReglas/ejerciciosResueltos.g4",
             "input": "input/entrada.txt", 
-            "startRule": "programa", 
+            "startRule": "s", // default: "programa", reemplazar por la regla de incio del ejercicio en cuestion
             "printParseTree": true, 
             "visualParseTree": true 
 
