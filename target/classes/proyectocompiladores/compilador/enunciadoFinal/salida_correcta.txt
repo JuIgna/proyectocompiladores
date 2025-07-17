@@ -1,0 +1,141 @@
+=== TABLA DE SÍMBOLOS ===
+NOMBRE          TIPO       CATEGORÍA       LÍNEA      COLUMNA    ÁMBITO          DETALLES
+--------------------------------------------------------------------------------------------
+contadorGlobal  int        variable        5          4          global          [private]
+valorPi         double     variable        6          7          global          [private]
+inicial         char       variable        7          5          global          [private]
+activo          bool       variable        8          5          global          [private]
+sumar           int        funcion         11         4          global          [private] [int, int]
+a               int        parametro       11         14         sumar
+b               int        parametro       11         21         sumar
+resultado       int        variable        12         8          sumar           [private]
+main            int        funcion         19         4          global          [private]
+estado          int        variable        20         8          main            [private]
+temp            int        variable        21         8          main            [private]
+numeros         int        variable        22         8          main            [arr:3] [private]
+auxiliar        int        variable        50         12         main            [private]
+// Código de tres direcciones generado automáticamente
+// Archivo: ejemplo_codigo_intermedio.txt
+// Total de instrucciones: 55
+
+  0: // Código de tres direcciones generado
+  1: PROGRAMA_INICIO:
+  2: // Declaración de variables globales
+  3: DECLARE contadorGlobal int
+  4: DECLARE valorPi double
+  5: DECLARE inicial char
+  6: DECLARE activo bool
+  7: func_sumar:
+  8: PARAM a int
+  9: PARAM b int
+ 10: t1 = a + b
+ 11: t2 = contadorGlobal + 1
+ 12: contadorGlobal = t2
+ 13: return t1
+ 14: func_main:
+ 15: DECLARE estado int
+ 16: DECLARE temp int
+ 17: DECLARE numeros[3] int
+ 18: contadorGlobal = 0
+ 19: valorPi = 3.14
+ 20: inicial = 'M'
+ 21: activo = false
+ 22: numeros[0] = 10
+ 23: numeros[1] = 20
+ 24: numeros[2] = 30
+ 25: t3 = numeros[0] + numeros[1]
+ 26: t4 = t3 * 2
+ 27: t5 = t4 / 3
+ 28: temp = t5 % 5
+ 29: t6 = 5 + 3
+ 30: t7 = 10 * 2
+ 31: t8 = 15 - 7
+ 32: temp = temp
+ 33: t9 = temp
+ 34: t9 = t9
+ 35: CALL func_sumar, temp, 5
+ 36: estado = RETURN_VALUE
+ 37: contadorGlobal = estado
+ 38: valorPi = temp
+ 39: inicial = 'X'
+ 40: activo = true
+ 41: t10 = estado > 0
+ 42: if t10 goto THEN_1
+ 43: goto END_IF_1
+ 44: THEN_1:
+ 45: t11 = estado + 10
+ 46: estado = t11
+ 47: END_IF_1:
+ 48: goto FINAL
+ 49: CODIGO_MUERTO:
+ 50: t12 = 999
+ 51: temp = t12
+ 52: FINAL:
+ 53: return estado
+ 54: PROGRAMA_FIN:
+
+
+
+// Código de tres direcciones OPTIMIZADO
+// Archivo: ejemplo_codigo_optimizado.txt
+// Optimizaciones aplicadas:
+//   - Eliminación de código muerto
+//   - Propagación de constantes
+//   - Simplificación de expresiones
+//   - Eliminación de sentencias redundantes
+//
+// Estadísticas de optimización:
+//   Instrucciones originales: 55
+//   Instrucciones optimizadas: 49
+//   Instrucciones eliminadas: 6
+//   Reducción de código: 10,91%
+
+  0: // Código de tres direcciones generado
+  1: PROGRAMA_INICIO:
+  2: // Declaración de variables globales
+  3: DECLARE contadorGlobal int
+  4: DECLARE valorPi double
+  5: DECLARE inicial char
+  6: DECLARE activo bool
+  7: func_sumar:
+  8: PARAM a int
+  9: PARAM b int
+ 10: t1 = a + b
+ 11: t2 = contadorGlobal + 1
+ 12: contadorGlobal = t2
+ 13: return t1
+ 14: func_main:
+ 15: DECLARE estado int
+ 16: DECLARE temp int
+ 17: DECLARE numeros[3] int
+ 18: contadorGlobal = 0
+ 19: valorPi = 3.14
+ 20: inicial = 'M'
+ 21: activo = false
+ 22: numeros[0] = 10
+ 23: numeros[1] = 20
+ 24: numeros[2] = 30
+ 25: t3 = numeros[0] + numeros[1]
+ 26: t4 = t3 * 2
+ 27: t5 = t4 / 3
+ 28: temp = t5 % 5
+ 29: t6 = 8
+ 30: t7 = 20
+ 31: t8 = 8
+ 32: t9 = temp
+ 33: CALL func_sumar, temp, 5
+ 34: estado = RETURN_VALUE
+ 35: 0 = estado
+ 36: 3.14 = temp
+ 37: inicial = 'X'
+ 38: activo = true
+ 39: t10 = estado > 0
+ 40: if t10 goto THEN_1
+ 41: goto END_IF_1
+ 42: THEN_1:
+ 43: t11 = estado + 10
+ 44: estado = t11
+ 45: END_IF_1:
+ 46: goto FINAL
+ 47: FINAL:
+ 48: return estado
