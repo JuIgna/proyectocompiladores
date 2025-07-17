@@ -1,0 +1,51 @@
+0: // Código de tres direcciones generado
+1: PROGRAMA_INICIO:
+2: // Declaración de variables globales
+3: DECLARE contadorGlobal int
+4: DECLARE valorPi double
+5: DECLARE inicial char
+6: DECLARE activo bool
+7: func_sumar:
+8: PARAM a int
+9: PARAM b int
+10: DECLARE resultado int
+t1 = a + b;
+11: resultado = t1
+t2 = contadorGlobal + 1;
+12: contadorGlobal = t2
+13: return resultado
+14: func_main:
+15: DECLARE estado int
+16: DECLARE temp int
+17: DECLARE numeros[3] int
+18: contadorGlobal = 0
+19: valorPi = 3.14
+20: inicial = 'M'
+21: numeros[0] = 10
+22: numeros[1] = 20
+23: numeros[2] = 30
+t3 = 0 + 1;
+24: temp = t3
+t4 = temp * 2;
+25: temp = t4
+t5 = temp / 3;
+26: temp = t5
+t6 = temp % 5;
+27: temp = t6
+28: CALL func_sumar, temp, 5
+29: t7 = RETURN_VALUE
+30: estado = t7
+31: contadorGlobal = estado
+32: valorPi = temp
+33: inicial = 'X'
+t8 = estado > 0;
+34: if t8 goto L0
+35: goto L1
+36: L0:
+37: DECLARE auxiliar int
+t9 = estado + 10;
+38: auxiliar = t9
+39: estado = auxiliar
+40: L1:
+41: return estado
+42: PROGRAMA_FIN:

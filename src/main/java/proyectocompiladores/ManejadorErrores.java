@@ -22,13 +22,12 @@ public class ManejadorErrores extends BaseErrorListener {
             int posicionEnLinea,
             String mensaje,
             RecognitionException e) {
-                
         String tipoError = "Error sintáctico";
         if (mensaje.contains("missing ';'")) {
             tipoError = "Error sintáctico: Falta de un punto y coma";
         } else if (mensaje.contains("missing '('")) {
             tipoError = "Error sintáctico: Falta de apertura de paréntesis";
-        }else if (mensaje.contains("missing ')'")) {
+        } else if (mensaje.contains("missing ')'")) {
             tipoError = "Error sintáctico: Falta de cierre de paréntesis";
         } else if (mensaje.contains("mismatched input")) {
             tipoError = "Error sintáctico: Formato incorrecto en lista de declaración de variables";
@@ -36,12 +35,14 @@ public class ManejadorErrores extends BaseErrorListener {
             tipoError = "Error: Falta '}' para cerrar un bloque en la línea " + linea;
         } else if (mensaje.contains("missing '{'")) {
             tipoError = "Error: Falta '{' para abrir un bloque en la línea " + linea;
+        } else if (mensaje.contains("token recognition error")) {
+            tipoError = "Error léxico: Token no reconocido";
         }
         escritorErrores.println(tipoError + " en línea " + linea + ":" + posicionEnLinea + " - " + mensaje);
         errores++;
     }
 
-    public boolean verificarErrores(){
+    public boolean verificarErrores() {
         return errores == 0;
     }
     

@@ -1,75 +1,8 @@
-Tabla de Símbolos:
-------------------
-Contexto: 0
-------------------
-Nombre: variableGlobal, Tipo: INT
-
-Contexto: 1
-------------------
-Nombre: main, Tipo: INT
-
-Contexto: 2
-------------------
-Nombre: suma, Tipo: INT
-Nombre: numero, Tipo: INT
-Nombre: sumaDividida, Tipo: DOUBLE
-Nombre: x, Tipo: INT
-Nombre: y, Tipo: INT
-Nombre: z, Tipo: INT
-Nombre: bandera, Tipo: INT
-
-Contexto: 3
-------------------
-
-Contexto: 4
-------------------
-
-Contexto: 5
-------------------
-
-Contexto: 6
-------------------
-
-Contexto: 7
-------------------
-Nombre: asignarNumero, Tipo: DOUBLE
-
-Contexto: 8
-------------------
-Nombre: numero, Tipo: DOUBLE
-
-Contexto: 9
-------------------
-Nombre: asignarNumero, Tipo: INT
-
-Contexto: 10
-------------------
-Nombre: numero, Tipo: INT
-
-Contexto: 11
-------------------
-Nombre: asignarNumero, Tipo: VOID
-
-Contexto: 12
-------------------
-Nombre: numero, Tipo: INT
-
-Contexto: 13
-------------------
-Nombre: sumaDividida, Tipo: DOUBLE
-Nombre: valor, Tipo: DOUBLE
-
-Contexto: 14
-------------------
-Nombre: sumaDividida, Tipo: DOUBLE
-
-Contexto: 15
-------------------
-Nombre: suma, Tipo: INT
-Nombre: valor1, Tipo: INT
-Nombre: valor2, Tipo: INT
-
-Contexto: 16
-------------------
-Nombre: suma, Tipo: INT
-
+=== TABLA DE SÍMBOLOS ===
+NOMBRE          TIPO       CATEGORÍA       LÍNEA      COLUMNA    ÁMBITO          DETALLES
+--------------------------------------------------------------------------------------------
+resultado       int        variable        12         8          global          [private]           
+auxiliar        int        variable        50         12         sumar           [private]           
+estado          int        variable        20         8          sumar           [private]           
+temp            int        variable        21         8          sumar           [private]           
+numeros         int        variable        22         8          sumar           [private] [arr:3]   

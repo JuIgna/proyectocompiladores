@@ -7,52 +7,61 @@ import java.util.Map;
 
 import proyectocompiladores.compilador.compiladoresBaseVisitor;
 import proyectocompiladores.compilador.compiladoresParser;
+
 import proyectocompiladores.contexto.TipoDato;
 
 public class Caminante extends compiladoresBaseVisitor<String> {
     private final StringBuilder codigoTresDirecciones = new StringBuilder();
-    private int tempCounter = 0;
+    private int tempCounter = 1; // comenzar en t1
+    // private int tempCounter = 0;
     private int labelCounter = 0; // contar etiquetas
+    private String currentFunction = null;
+    private int instruccionCounter = 0;
 
     private String nuevaTemporal() {
         return "t" + (tempCounter++);
     }
 
     private String nuevaEtiqueta() {
-        return "L" + labelCounter++;
+        return "L" + (labelCounter++);
     }
 
     public String getCodigoGenerado() {
         return codigoTresDirecciones.toString();
     }
 
-@Override
-public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
-    String tipo = ctx.tipo().getText();
-    StringBuilder resultado = new StringBuilder();
-
-    for (compiladoresParser.DeclaradorContext decl : ctx.declarador()) {
-        String nombre = decl.ID().getText();
-        String expresion = decl.expresion() != null ? visit(decl.expresion()) : "0";
-
-        if (decl.expresion() != null) {
-            codigoTresDirecciones.append(nombre).append(" = ").append(expresion).append(";\n");
-        } else {
-            codigoTresDirecciones.append(nombre).append(" = 0;\n");
-        }
-        resultado.append(tipo).append(" ").append(nombre).append(" = ").append(expresion).append(";");
+    @Override
+    public String visitPrograma(compiladoresParser.ProgramaContext ctx) {
+        appendInstruccion("// Código de tres direcciones generado");
+        appendInstruccion("PROGRAMA_INICIO:");
+        appendInstruccion("// Declaración de variables globales");
+        super.visitPrograma(ctx);
+        appendInstruccion("PROGRAMA_FIN:");
+        return null;
     }
 
-    return resultado.toString();
-}
+    @Override
+    public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
+        String tipo = ctx.tipo().getText();
+        for (compiladoresParser.DeclaradorContext decl : ctx.declarador()) {
+            String nombre = decl.ID().getText();
+            Integer arraySize = decl.CORCHETE() != null ? Integer.parseInt(decl.NUMERO().getText()) : null;
+            appendInstruccion("DECLARE " + nombre + (arraySize != null ? "[" + arraySize + "]" : "") + " " + tipo);
+            if (decl.expresion() != null) {
+                String expresion = visit(decl.expresion());
+                appendInstruccion(nombre + " = " + expresion);
+            }
+        }
+        return null;
+    }
 
     @Override
     public String visitAsignacion(compiladoresParser.AsignacionContext ctx) {
         String nombre = ctx.ID().getText();
-        String temp = visit(ctx.expresion());
-        codigoTresDirecciones.append(nombre).append(" = ").append(temp).append(";");
-        codigoTresDirecciones.append("\n");
-        return nombre + " = " + temp + ";";
+        String index = ctx.CORCHETE() != null ? "[" + visit(ctx.expresion(0)) + "]" : "";
+        String expresion = visit(ctx.expresion(ctx.CORCHETE() != null ? 1 : 0));
+        appendInstruccion(nombre + index + " = " + expresion);
+        return nombre + index + " = " + expresion;
     }
 
     Map<String, String> cacheExpresiones = new HashMap<>();
@@ -143,9 +152,13 @@ public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
         if (ctx.expresion() != null) {
             return visit(ctx.expresion());
         } else if (ctx.ID() != null) {
-            return ctx.ID().getText();
+            String id = ctx.ID().getText();
+            String index = ctx.CORCHETE() != null ? "[" + visit(ctx.expresion()) + "]" : "";
+            return id + index;
         } else if (ctx.STRING() != null) {
             return ctx.STRING().getText();
+        } else if (ctx.CHAR_LITERAL() != null) {
+            return ctx.CHAR_LITERAL().getText();
         } else if (ctx.llamadaPrints() != null) {
             return visit(ctx.llamadaPrints());
         } else if (ctx.llamadaFuncion() != null) {
@@ -159,7 +172,6 @@ public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
         } else if (ctx.booleano() != null) {
             return ctx.booleano().getText();
         }
-
         return null;
     }
 
@@ -175,37 +187,24 @@ public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
         return null;
     }
 
+
     @Override
     public String visitIfElse(compiladoresParser.IfElseContext ctx) {
         String condicion = visit(ctx.expresion());
-        String etiquetaVerdadero = nuevaEtiqueta();
-        String etiquetaFalso = nuevaEtiqueta();
-        String etiquetaFin = nuevaEtiqueta();
+        String etiquetaThen = nuevaEtiqueta();
+        String etiquetaEnd = nuevaEtiqueta();
+        String etiquetaElse = ctx.ELSE() != null ? nuevaEtiqueta() : etiquetaEnd;
 
-        // obtener el texto del bloque para verificar balanceo
-        String bloqueIf = ctx.bloque(0).getText();
-
-        // generar el codigo de tres direcciones para el if
-        codigoTresDirecciones.append("if ").append(condicion).append(" goto ").append(etiquetaVerdadero).append(";\n");
-        visit(ctx.bloque(0)); // procesar el bloque if
-        codigoTresDirecciones.append("goto ").append(etiquetaFalso).append(";\n");
-
-        // procesar el else, si existe
-        codigoTresDirecciones.append(etiquetaVerdadero).append(":\n");
-
-        // salto al final
-        codigoTresDirecciones.append("goto ").append(etiquetaFin).append("\n");
-        ;
-
-        // bloque falso
-        codigoTresDirecciones.append(etiquetaFalso).append(":\n");
+        appendInstruccion("if " + condicion + " goto " + etiquetaThen);
+        appendInstruccion("goto " + etiquetaElse);
+        appendInstruccion(etiquetaThen + ":");
+        visit(ctx.bloque(0));
         if (ctx.ELSE() != null) {
-            visit(ctx.bloque(1)); // Ejecutar el bloque else
+            appendInstruccion("goto " + etiquetaEnd);
+            appendInstruccion(etiquetaElse + ":");
+            visit(ctx.bloque(1));
         }
-
-        // fin del if-else
-        codigoTresDirecciones.append(etiquetaFin).append(":\n");
-
+        appendInstruccion(etiquetaEnd + ":");
         return null;
     }
 
@@ -330,22 +329,6 @@ public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
     }
 
     @Override
-    public String visitReturn(compiladoresParser.ReturnContext ctx) {
-        ;
-        // instruccion de retorno
-        codigoTresDirecciones.append("return");
-        // verificar si hay una expresion
-        if (ctx.expresion() != null) {
-            // si hay expresion generar el codigo de tres direcciones para la expresion
-            String resultadoExpresion = visit(ctx.expresion()); // asumiento que visit genera el codigo de tres direcciones para la expresion
-            codigoTresDirecciones.append(" ").append(resultadoExpresion);
-        }
-        codigoTresDirecciones.append(";\n");
-
-        return null;
-    }
-
-    @Override
     public String visitDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx) {
         String tipo = ctx.tipo().getText();
         String id = ctx.ID().getText();
@@ -372,55 +355,51 @@ public String visitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
         }
     }
 
+
+    @Override
     public String visitLlamadaFuncion(compiladoresParser.LlamadaFuncionContext ctx) {
         String nombreFuncion = ctx.ID().getText();
-
-        // procesar los argumentos de la funcion
         List<String> argumentos = new ArrayList<>();
         for (compiladoresParser.ExpresionContext exp : ctx.expresion()) {
-            String argumentoEvaluado = visit(exp); // Evaluamos cada argumento
-            System.out.println("Argumento evaluado: " + argumentoEvaluado); // Depuración
-            argumentos.add(argumentoEvaluado);
+            argumentos.add(visit(exp));
         }
-
-        // generar la llamada a la función
-        StringBuilder llamada = new StringBuilder("call ").append(nombreFuncion);
-        if (!argumentos.isEmpty()) {
-            llamada.append(" (").append(String.join(", ", argumentos)).append(")");
-        }
-        llamada.append(";\n");
-
-        // agregar la llamada al codigo de tres direcciones siempre
-        codigoTresDirecciones.append(llamada.toString());
-
+        appendInstruccion("CALL func_" + nombreFuncion + ", " + String.join(", ", argumentos));
         String temporal = nuevaTemporal();
-        codigoTresDirecciones.append(temporal).append(" = return;\n");
-
-        return null; // las funciones void no devuelven valores
+        appendInstruccion(temporal + " = RETURN_VALUE");
+        return temporal;
     }
+
 
     @Override
     public String visitCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) {
-        
-        // obtener el nombre de la función (ID) y su tipo
-        String tipo = ctx.tipo().getText().toUpperCase();
         String id = ctx.ID().getText();
-
-        // crear la declaración de la función
-        if (tipo.equals("VOID")) {
-            codigoTresDirecciones.append("function ").append(id).append(" (void):\n");
-        } else {
-            codigoTresDirecciones.append("function ").append(id).append(":\n");
+        currentFunction = id;
+        appendInstruccion("func_" + id + ":");
+        if (ctx.parametros() != null) {
+            for (compiladoresParser.ParametroContext param : ctx.parametros().parametro()) {
+                appendInstruccion("PARAM " + param.ID().getText() + " " + param.tipo().getText());
+            }
         }
-
-        // procesar el bloque de la funcion
         if (ctx.bloque() != null) {
             visit(ctx.bloque());
         }
-
-        // finalizar la declaracion de la funcion
-        codigoTresDirecciones.append("end function\n");
-
+        currentFunction = null;
         return null;
     }
+
+    @Override
+    public String visitReturn(compiladoresParser.ReturnContext ctx) {
+        if (ctx.expresion() != null) {
+            String resultado = visit(ctx.expresion());
+            appendInstruccion("return " + resultado);
+        } else {
+            appendInstruccion("return");
+        }
+        return null;
+    }
+
+    private void appendInstruccion(String instruccion) {
+        codigoTresDirecciones.append(instruccionCounter++).append(": ").append(instruccion).append("\n");
+    }
+
 }

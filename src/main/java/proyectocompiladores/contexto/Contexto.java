@@ -31,6 +31,10 @@ public class Contexto {
         return null;
     }
 
+    public Identificador buscarIdentificadorPorNombre(String nombre){
+        return identificadores.get(nombre);
+    }
+
     // metodo get para obtener le map
     public Map<String, Identificador> getIdentificadores() {
         return identificadores;

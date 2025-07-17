@@ -21,7 +21,6 @@ public class TablaSimbolos {
         }
     }
 
-
     public Identificador buscarIdentificador(Identificador id) {
         for (int i = contextos.size() - 1; i >= 0; i--) {
             Identificador identificador = contextos.get(i).buscarIdentificador(id);
@@ -33,15 +32,12 @@ public class TablaSimbolos {
     }
 
     public TipoDato buscarTipoIdentificador(String nombre) {
-        Identificador id = new Identificador(nombre, null);
-
         for (int i = contextos.size() - 1; i >= 0; i--) {
-            Identificador encontrado = contextos.get(i).buscarIdentificador(id);
+            Identificador encontrado = contextos.get(i).buscarIdentificadorPorNombre(nombre);
             if (encontrado != null) {
                 return encontrado.getTipoDato();
             }
         }
-
         return null;
     }
 
@@ -54,6 +50,7 @@ public class TablaSimbolos {
             }
         }
     }
+
 
     public List<Contexto> getContextos() {
         return contextos;
@@ -70,10 +67,21 @@ public class TablaSimbolos {
         }
     }
 
-
     public Identificador buscarIdentificadorLocal(Identificador id) {
         return contextos.get(contextos.size() - 1).buscarIdentificador(id);
     }
+
+    
+    public Identificador buscarIdentificadorPorNombre(String nombre) {
+        for (int i = contextos.size() - 1; i >= 0; i--) {
+            Identificador encontrado = contextos.get(i).buscarIdentificadorPorNombre(nombre);
+            if (encontrado != null) {
+                return encontrado;
+            }
+        }
+        return null;
+    }
+
 
     public void addIdentificador(Identificador identificador) {
         contextos.get(contextos.size() - 1).addIdentificador(identificador);
@@ -83,10 +91,5 @@ public class TablaSimbolos {
         return contextos.get(contextos.size() - 1);
     }
 
-    public int funcionRandom (int a,  int b){
 
-        return a + b;
-    }
-
-    
 }
