@@ -19,97 +19,67 @@ public class Optimizador {
     }
 
     public String optimizar() {
-        analizarVariablesUtilizadas();
-        eliminarOperacionesRedundantes();
-        return codigoOptimizado.toString();
-    }
-
-    private void analizarVariablesUtilizadas() {
         String[] lineas = codigoOriginal.split("\n");
-        for (String linea : lineas) {
-            String[] partes = linea.split("=");
-            if (partes.length > 1) {
-                String derecha = partes[1].trim();
-                for (String token : derecha.split("[ +\\-*/<>&|(),]+")) {
-                    token = token.trim();
-                    if (!token.isEmpty() && !Character.isDigit(token.charAt(0))) {
-                        variablesUtilizadas.add(token);
-                    }
-                }
-            }
-        }
-    }
-
-    private void eliminarOperacionesRedundantes() {
-        String[] lineas = codigoOriginal.split("\n");
+        boolean enFuncion = false;
+        
         for (String linea : lineas) {
             linea = linea.trim();
-            if (esAsignacion(linea)) {
-                String[] partes = linea.split("=");
-                String izquierda = partes[0].trim();
-                String derecha = partes[1].trim().replace(";", "");
-
-                // si la expresion ya es constante, se puede optimizar directamente
-                if (variablesUtilizadas.contains(izquierda)) {
-                    Integer valorConstante = evaluarExpresion(derecha);
-                    if (valorConstante != null) {
-                        constantes.put(izquierda, valorConstante);
-                        codigoOptimizado.append(izquierda).append(" = ").append(valorConstante).append(";\n");
-                    } else {
-                        String expresionOptimizada = reemplazarConstantes(derecha);
-                        codigoOptimizado.append(izquierda).append(" = ").append(expresionOptimizada).append(";\n");
-                    }
-                } else {
-                    codigoOptimizado.append(linea).append("\n");
-                }
+            if (linea.isEmpty()) continue;
+            
+            // Detectar inicio de función
+            if (linea.startsWith("func_") && linea.endsWith(":")) {
+                enFuncion = true;
+                codigoOptimizado.append(linea).append("\n");
+                continue;
+            }
+            
+            // Detectar fin de programa
+            if (linea.equals("PROGRAMA_FIN:")) {
+                codigoOptimizado.append(linea).append("\n");
+                break;
+            }
+            
+            // Optimizar asignaciones
+            if (linea.contains("=") && !linea.startsWith("if") && !linea.startsWith("goto") && !linea.startsWith("CALL")) {
+                String lineaOptimizada = optimizarAsignacion(linea);
+                codigoOptimizado.append(lineaOptimizada).append("\n");
             } else {
                 codigoOptimizado.append(linea).append("\n");
             }
         }
+        
+        return codigoOptimizado.toString();
     }
 
-    private Integer evaluarExpresion(String expresion) {
-        try {
-            return Integer.parseInt(expresion);
-        } catch (NumberFormatException e) {
-            String[] tokens = expresion.split(" ");
-            if (tokens.length == 3) {
-                Integer a = obtenerValor(tokens[0].trim());
-                Integer b = obtenerValor(tokens[2].trim());
+    private String optimizarAsignacion(String linea) {
+        String[] partes = linea.split("=");
+        if (partes.length != 2) return linea;
+        
+        String izquierda = partes[0].trim();
+        String derecha = partes[1].trim().replace(";", "");
+        
+        // Optimizar expresiones constantes
+        if (derecha.matches("\\d+\\s*[+\\-*/]\\s*\\d+")) {
+            try {
+                String[] tokens = derecha.split("\\s+");
+                int a = Integer.parseInt(tokens[0]);
+                int b = Integer.parseInt(tokens[2]);
                 String operador = tokens[1];
-                if (a != null && b != null) {
-                    return switch (operador) {
-                        case "+" -> a + b;
-                        case "-" -> a - b;
-                        case "*" -> a * b;
-                        case "/" -> (b != 0) ? a / b : null;
-                        default -> null;
-                    };
-                }
+                
+                int resultado = switch (operador) {
+                    case "+" -> a + b;
+                    case "-" -> a - b;
+                    case "*" -> a * b;
+                    case "/" -> b != 0 ? a / b : a;
+                    default -> throw new IllegalArgumentException("Operador no soportado: " + operador);
+                };
+                
+                return izquierda + " = " + resultado;
+            } catch (Exception e) {
+                return linea;
             }
         }
-        return null;
-    }
-
-    private Integer obtenerValor(String token) {
-        if (constantes.containsKey(token)) {
-            return constantes.get(token);
-        }
-        try {
-            return Integer.parseInt(token);
-        } catch (NumberFormatException ignored) {
-        }
-        return null;
-    }
-
-    private String reemplazarConstantes(String expresion) {
-        for (Map.Entry<String, Integer> entry : constantes.entrySet()) {
-            expresion = expresion.replace(entry.getKey(), entry.getValue().toString());
-        }
-        return expresion;
-    }
-
-    private boolean esAsignacion(String linea) {
-        return linea.contains("=") && !linea.matches(".*(if|goto|call|return).*");
+        
+        return linea;
     }
 }

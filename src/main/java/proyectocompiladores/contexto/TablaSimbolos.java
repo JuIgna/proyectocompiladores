@@ -91,5 +91,16 @@ public class TablaSimbolos {
         return contextos.get(contextos.size() - 1);
     }
 
+    // Agregar este método al final de la clase TablaSimbolos
+public void addIdentificadorGlobal(Identificador identificador) {
+    // Agregar al contexto global (primer contexto)
+    contextos.get(0).addIdentificador(identificador);
+}
+
+public Identificador buscarIdentificadorGlobal(Identificador id) {
+    // Buscar solo en el contexto global
+    return contextos.get(0).buscarIdentificador(id);
+}
+
 
 }

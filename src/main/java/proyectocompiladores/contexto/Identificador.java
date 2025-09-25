@@ -8,7 +8,7 @@ public class Identificador {
     int linea;
     int columna;
     String categoria; // "variable"
-    String ambito; // "global", "main", "sumar", etc.
+    public String ambito; // "global", "main", "sumar", etc.
     String detalles; // "[private]", "[arr:3]", "[int, int]", etc
 
     public Identificador(String nombre, TipoDato tipoDato, int linea, int columna, String categoria, String ambito, String detalles) {

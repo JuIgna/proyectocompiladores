@@ -1,8 +1,0 @@
-=== TABLA DE SÍMBOLOS ===
-NOMBRE          TIPO       CATEGORÍA       LÍNEA      COLUMNA    ÁMBITO          DETALLES
---------------------------------------------------------------------------------------------
-resultado       int        variable        12         8          global          [private]           
-auxiliar        int        variable        50         12         sumar           [private]           
-estado          int        variable        20         8          sumar           [private]           
-temp            int        variable        21         8          sumar           [private]           
-numeros         int        variable        22         8          sumar           [private] [arr:3]   

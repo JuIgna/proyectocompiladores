@@ -8,8 +8,12 @@ public class Variable extends Identificador {
         this.arraySize = arraySize;
     }
 
-    public Integer getArraySize () {
+    public Integer getArraySize() {
         return arraySize;
     }
 
+    // Agregar este método para permitir cambiar la categoría
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
 }

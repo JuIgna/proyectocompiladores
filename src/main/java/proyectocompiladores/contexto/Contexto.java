@@ -1,6 +1,7 @@
 package proyectocompiladores.contexto;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Contexto {
@@ -10,7 +11,7 @@ public class Contexto {
 
     // Constructor para inicializar el map de identificadores
     public Contexto() {
-        this.identificadores = new HashMap<>();
+        this.identificadores = new LinkedHashMap<>();
     }
 
     // añadir un identificador al contexto actual

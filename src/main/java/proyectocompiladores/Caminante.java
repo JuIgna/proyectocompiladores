@@ -13,7 +13,6 @@ import proyectocompiladores.contexto.TipoDato;
 public class Caminante extends compiladoresBaseVisitor<String> {
     private final StringBuilder codigoTresDirecciones = new StringBuilder();
     private int tempCounter = 1; // comenzar en t1
-    // private int tempCounter = 0;
     private int labelCounter = 0; // contar etiquetas
     private String currentFunction = null;
     private int instruccionCounter = 0;
@@ -35,7 +34,19 @@ public class Caminante extends compiladoresBaseVisitor<String> {
         appendInstruccion("// Código de tres direcciones generado");
         appendInstruccion("PROGRAMA_INICIO:");
         appendInstruccion("// Declaración de variables globales");
-        super.visitPrograma(ctx);
+        
+        // Procesar declaraciones globales primero
+        for (compiladoresParser.InstruccionContext instruccion : ctx.instruccion()) {
+            if (instruccion.declaracion() != null && currentFunction == null) {
+                visit(instruccion.declaracion());
+            }
+        }
+        
+        // Procesar funciones
+        for (compiladoresParser.CuerpoFuncionContext cuerpoFuncion : ctx.cuerpoFuncion()) {
+            visit(cuerpoFuncion);
+        }
+        
         appendInstruccion("PROGRAMA_FIN:");
         return null;
     }
@@ -207,6 +218,7 @@ public class Caminante extends compiladoresBaseVisitor<String> {
         appendInstruccion(etiquetaEnd + ":");
         return null;
     }
+
 
     @Override
     public String visitWhileLoop(compiladoresParser.WhileLoopContext ctx) {

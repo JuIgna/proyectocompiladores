@@ -52,7 +52,8 @@ LC: '//' ~[\r\n]* -> skip;
 BC: '/*' .*? '*/' -> skip;
 ERROR: . ; //c
 
-programa: (cuerpoFuncion | instruccion)* EOF;
+// Cambiar el orden para procesar declaraciones globales primero
+programa: (instruccion | cuerpoFuncion | declaracionFuncion)* EOF;
 
 instrucciones: (instruccion)*;
 
@@ -71,11 +72,11 @@ bloque: LLA instrucciones? LLC;
 
 error: ~LLC+;
 
-declaracionFuncion: tipo ID PA parametros? PC PYC;
+// O mejor aún, unificar las reglas
+declaracionFuncion: tipo ID PA parametros? PC (bloque | PYC);
+cuerpoFuncion: tipo ID PA parametros? PC bloque;
 
 llamadaFuncion: ID PA (expresion (COMA expresion)*)? PC;
-
-cuerpoFuncion: tipo ID PA parametros? PC bloque;
 
 parametros: parametro (COMA parametro)*;
 
