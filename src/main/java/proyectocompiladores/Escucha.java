@@ -57,25 +57,22 @@ public class Escucha extends compiladoresBaseListener {
             tipoDato = TipoDato.valueOf(tipoTxt.toUpperCase());
         } catch (IllegalArgumentException e) {
             errores++;
-            escritorErrores.println("Error semántico: Tipo inválido '" + tipoTxt + "'. En línea: " + ctx.getStart().getLine());
+            escritorErrores
+                    .println("Error semántico: Tipo inválido '" + tipoTxt + "'. En línea: " + ctx.getStart().getLine());
             return;
         }
         int linea = ctx.ID().getSymbol().getLine();
         int columna = ctx.ID().getSymbol().getCharPositionInLine();
-    
-        // no agregamos aún a la TS (evitamos ámbito global), guardamos temporalmente
+
         Identificador p = new Identificador(nombre, tipoDato, linea, columna, "parametro", null, "");
         parametrosPendientes.add(p);
     }
-    
-    
-    
 
     @Override
     public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
         String ambito = resolveAmbito(ctx);
         System.out.println("🔍 Debug: Procesando declaración en ámbito: " + ambito);
-        
+
         String tipo = ctx.tipo().getText();
         TipoDato tipoDato;
         try {
@@ -92,7 +89,7 @@ public class Escucha extends compiladoresBaseListener {
             int linea = decl.ID().getSymbol().getLine();
             int columna = decl.ID().getSymbol().getCharPositionInLine();
             Integer arraySize = decl.CORCHETE() != null ? Integer.parseInt(decl.NUMERO().getText()) : null;
-            
+
             Identificador identificador = new Variable(nombre, tipoDato, linea, columna, ambito, arraySize);
 
             if (tablaSimbolos.buscarIdentificadorLocal(identificador) == null) {
@@ -135,7 +132,6 @@ public class Escucha extends compiladoresBaseListener {
         Identificador idEncontrado = tablaSimbolos.buscarIdentificadorPorNombre(nombre);
         if (idEncontrado != null && idEncontrado.getCategoria().equals("funcion")) {
             tablaSimbolos.identificadorUtilizado(idEncontrado);
-            // Marcar argumentos como utilizados
             for (compiladoresParser.ExpresionContext exp : ctx.expresion()) {
                 marcarVariablesUsadas(exp);
             }
@@ -147,7 +143,49 @@ public class Escucha extends compiladoresBaseListener {
     }
 
     @Override
+    public void enterDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx) {
+        System.out.println("ESTOY EN ENTER DECLARACION FUNCION");
+
+        String nombreFuncion = "unknown";
+        if (ctx.ID() != null) {
+            nombreFuncion = ctx.ID().getText();
+        } else {
+            try {
+                nombreFuncion = ctx.getParent().getChild(1).getText();
+            } catch (Exception e) {
+            }
+        }
+
+
+        boolean existe = false;
+        for (Contexto c : tablaSimbolos.getContextos()) {
+            if (c.getNombre().equals(nombreFuncion)) {
+                existe = true;
+                break;
+            }
+        }
+        if (!existe) {
+            tablaSimbolos.addContexto(nombreFuncion);
+        }
+
+        currentAmbito = nombreFuncion;
+
+        if (!parametrosPendientes.isEmpty()) {
+            Contexto ctxActual = tablaSimbolos.getContextoActual();
+            for (Identificador p : parametrosPendientes) {
+                p.ambito = nombreFuncion;
+                ctxActual.addIdentificador(p);
+            }
+            parametrosPendientes.clear();
+        }
+
+        System.out.println("🔍 Debug: enterDeclaracionFuncion - creado/activado contexto para función: " + nombreFuncion
+                + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
+    }
+
+    @Override
     public void exitDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx) {
+        System.out.println("ESTOY EN LA EXIT DECLARACION FUNCION ");
         String nombre = ctx.ID().getText();
         String tipo = ctx.tipo().getText();
         int linea = ctx.ID().getSymbol().getLine();
@@ -159,36 +197,49 @@ public class Escucha extends compiladoresBaseListener {
             errores++;
             return;
         }
-    
+
         List<TipoDato> argumentos = new ArrayList<>();
         if (ctx.parametros() != null) {
             for (compiladoresParser.ParametroContext param : ctx.parametros().parametro()) {
                 argumentos.add(TipoDato.valueOf(param.tipo().getText().toUpperCase()));
             }
         }
-    
-        // Crear función
+
         Funcion funcion = new Funcion(nombre, tipoDato, linea, columna, "global", argumentos);
-    
+
         if (tablaSimbolos.buscarIdentificadorLocal(funcion) == null) {
             tablaSimbolos.addIdentificador(funcion);
-    
-            // Crear un contexto para la función y agregar parámetros allí
-            Contexto contextoFuncion = new Contexto();
-            for (Identificador p : parametrosPendientes) {
-                p.ambito = nombre; // marcar el ámbito
-                contextoFuncion.addIdentificador(p);
+
+
+            if (ctx.bloque() != null) {
+                boolean existe = false;
+                for (Contexto c : tablaSimbolos.getContextos()) {
+                    if (c.getNombre().equals(nombre)) {
+                        existe = true;
+                        break;
+                    }
+                }
+                if (!existe) {
+                    tablaSimbolos.addContexto(nombre);
+                }
+
+                currentAmbito = nombre;
+                Contexto ctxActual = tablaSimbolos.getContextoActual();
+                for (Identificador p : parametrosPendientes) {
+                    p.ambito = nombre;
+                    ctxActual.addIdentificador(p);
+                }
+                parametrosPendientes.clear();
+
+                contextosFunciones.add(ctxActual);
+            } else {
+                parametrosPendientes.clear();
             }
-            parametrosPendientes.clear();
-    
-            contextosFunciones.add(contextoFuncion);
         } else {
             errores++;
             escritorErrores.println("Error semántico: Función '" + nombre + "' ya declarada.");
         }
     }
-    
-    
 
     @Override
     public void exitExpresion(compiladoresParser.ExpresionContext ctx) {
@@ -290,15 +341,15 @@ public class Escucha extends compiladoresBaseListener {
     public void exitPrograma(compiladoresParser.ProgramaContext ctx) {
         System.out.println("🔍 Debug: Entrando en exitPrograma");
         System.out.println("🔍 Debug: Contextos disponibles: " + tablaSimbolos.getContextos().size());
-        
-        // Reconstruir la lista a imprimir: global + funciones
+
         contextoAuxiliar.clear();
         Contexto contextoGlobal = tablaSimbolos.getContextos().get(0);
         contextoAuxiliar.add(contextoGlobal);
         contextoAuxiliar.addAll(contextosFunciones);
-        System.out.println("🔍 Debug: Contexto global agregado con " + contextoGlobal.getIdentificadores().size() + " identificadores");
+        System.out.println("🔍 Debug: Contexto global agregado con " + contextoGlobal.getIdentificadores().size()
+                + " identificadores");
         System.out.println("🔍 Debug: Contextos de funciones agregados: " + contextosFunciones.size());
-        
+
         Set<Identificador> identificadores = new HashSet<>();
         for (Contexto contexto : contextoAuxiliar) {
             identificadores.addAll(contexto.getIdentificadores().values());
@@ -311,7 +362,7 @@ public class Escucha extends compiladoresBaseListener {
                         + identificador.getTipoDato() + " ha sido declarado pero no utilizado.");
             }
         }
-        
+
         imprimirTablaSimbolos("output/tabla_simbolos.txt");
 
         if (BalanceLlaves != 0) {
@@ -327,20 +378,24 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void enterBloque(compiladoresParser.BloqueContext ctx) {
-        // Solo agregar contexto si no estamos ya en una función
+        System.out.println("ESTOY EN ENTER BLOQUE ");
+
         if (!currentAmbito.equals("global")) {
-            tablaSimbolos.addContexto();
+            tablaSimbolos.addContexto(currentAmbito);
+        } else {
+
+            tablaSimbolos.addContexto("global");
         }
     }
 
     @Override
     public void exitBloque(compiladoresParser.BloqueContext ctx) {
         if (!currentAmbito.equals("global")) {
-            // Merge del contexto de bloque al contexto padre (función)
+            
             List<Contexto> lst = tablaSimbolos.getContextos();
             if (lst.size() >= 2) {
                 Contexto bloque = lst.get(lst.size() - 1);
-                Contexto padre  = lst.get(lst.size() - 2);
+                Contexto padre = lst.get(lst.size() - 2);
                 for (Identificador id : bloque.getIdentificadores().values()) {
                     padre.addIdentificador(id);
                 }
@@ -351,44 +406,65 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void enterCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) {
-        // Crear un contexto nuevo para la función
-        tablaSimbolos.addContexto();
-    
-        // Definir ámbito actual como el nombre de la función
-        String nombreFuncion = ctx.getParent().getChild(1).getText(); 
+        System.out.println("ESTOY EN ENTER CUERPO FUNCION ");
+        String nombreFuncion = null;
+        if (ctx.ID() != null) {
+            nombreFuncion = ctx.ID().getText();
+        } else {
+            try {
+                nombreFuncion = ctx.getParent().getChild(1).getText();
+            } catch (Exception e) {
+                nombreFuncion = "unknown";
+            }
+        }
+
+        boolean existe = false;
+        for (Contexto c : tablaSimbolos.getContextos()) {
+            if (c.getNombre().equals(nombreFuncion)) {
+                existe = true;
+                break;
+            }
+        }
+        if (!existe) {
+            tablaSimbolos.addContexto(nombreFuncion);
+        }
+
         currentAmbito = nombreFuncion;
+
+        if (!parametrosPendientes.isEmpty()) {
+            Contexto ctxActual = tablaSimbolos.getContextoActual();
+            for (Identificador p : parametrosPendientes) {
+                p.ambito = nombreFuncion; 
+                ctxActual.addIdentificador(p);
+            }
+            parametrosPendientes.clear();
+        }
+
+        System.out.println("🔍 Debug: enterCuerpoFuncion - contexto para función: " + nombreFuncion
+                + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
     }
-    
-    
+
     @Override
     public void exitCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) {
         String nombreFuncion = ctx.getParent().getChild(1).getText();
-    
-        // Crear o recuperar contexto de la función
-        Contexto contextoFuncion = null;
-        for (Contexto c : contextosFunciones) {
-            // Si ya existen parámetros en este contexto, lo consideramos el contexto de la función
-            if (!c.getIdentificadores().isEmpty()) {
-                Identificador p = c.getIdentificadores().values().iterator().next();
-                if (p.getAmbito().equals(nombreFuncion)) {
-                    contextoFuncion = c;
-                    break;
-                }
-            }
-        }
-        if (contextoFuncion == null) {
-            contextoFuncion = new Contexto();
-            contextosFunciones.add(contextoFuncion);
-        }
-    
-        // Mover parámetros pendientes al contexto de la función
+
+        Contexto contextoFuncion = contextosFunciones.stream()
+                .filter(c -> !c.getIdentificadores().isEmpty() &&
+                        c.getIdentificadores().values().iterator().next().getAmbito().equals(nombreFuncion))
+                .findFirst()
+                .orElseGet(() -> {
+                    Contexto nuevo = new Contexto();
+                    contextosFunciones.add(nuevo);
+                    return nuevo;
+                });
+
         for (Identificador p : parametrosPendientes) {
             p.ambito = nombreFuncion;
             contextoFuncion.addIdentificador(p);
         }
         parametrosPendientes.clear();
-    
-        // Mover variables locales declaradas en el contexto actual al contexto de la función
+
+
         Contexto ctxActual = tablaSimbolos.getContextoActual();
         List<Identificador> idsParaMover = new ArrayList<>();
         for (Identificador id : ctxActual.getIdentificadores().values()) {
@@ -401,26 +477,21 @@ public class Escucha extends compiladoresBaseListener {
             contextoFuncion.addIdentificador(id);
             ctxActual.getIdentificadores().remove(id.getNombre());
         }
-    
-        // Volver a global
+
         currentAmbito = "global";
     }
-    
-    
-    
-    
-    
-    
 
     @Override
     public void enterInstruccion(compiladoresParser.InstruccionContext ctx) {
-        System.out.println("�� Debug: enterInstruccion - ámbito: " + currentAmbito + " - contenido: " + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
+        System.out.println("�� Debug: enterInstruccion - ámbito: " + currentAmbito + " - contenido: "
+                + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
     }
 
     @Override
     public void exitInstruccion(compiladoresParser.InstruccionContext ctx) {
-        System.out.println("🔍 Debug: exitInstruccion - ámbito: " + currentAmbito + " - contenido: " + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
-        // No invocar manualmente otros handlers aquí. ANTLR llamará a exitDeclaracion/exitAsignacion/etc con el ámbito correcto.
+        System.out.println("🔍 Debug: exitInstruccion - ámbito: " + currentAmbito + " - contenido: "
+                + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
+
     }
 
     @Override
@@ -547,15 +618,16 @@ public class Escucha extends compiladoresBaseListener {
             }
         }
     }
+
     public int imprimirTablaSimbolosConsola() {
         System.out.println("=== TABLA DE SÍMBOLOS ===");
         System.out.printf("%-15s %-10s %-15s %-10s %-10s %-15s %-20s%n",
                 "NOMBRE", "TIPO", "CATEGORÍA", "LÍNEA", "COLUMNA", "ÁMBITO", "DETALLES");
-        System.out.println("--------------------------------------------------------------------------------------------");
-    
+        System.out.println(
+                "--------------------------------------------------------------------------------------------");
+
         int symbolCount = 0;
-    
-        // Contexto global
+
         Contexto contextoGlobal = tablaSimbolos.getContextos().get(0);
         for (Identificador id : contextoGlobal.getIdentificadores().values()) {
             System.out.printf("%-15s %-10s %-15s %-10d %-10d %-15s %-20s%n",
@@ -568,8 +640,7 @@ public class Escucha extends compiladoresBaseListener {
                     id.getDetalles());
             symbolCount++;
         }
-    
-        // Contextos de funciones
+
         for (Contexto funcCtx : contextosFunciones) {
             for (Identificador id : funcCtx.getIdentificadores().values()) {
                 System.out.printf("%-15s %-10s %-15s %-10d %-10d %-15s %-20s%n",
@@ -583,20 +654,18 @@ public class Escucha extends compiladoresBaseListener {
                 symbolCount++;
             }
         }
-    
+
         return symbolCount;
     }
-    
-    
-    
 
     public void imprimirTablaSimbolos(String archivoSalida) {
         try (PrintWriter escritor = new PrintWriter(new FileWriter(archivoSalida))) {
             System.out.println("=== TABLA DE SÍMBOLOS ===");
             System.out.printf("%-15s %-10s %-12s %-8s %-8s %-15s %-20s%n",
                     "NOMBRE", "TIPO", "CATEGORÍA", "LÍNEA", "COLUMNA", "ÁMBITO", "DETALLES");
-            System.out.println("--------------------------------------------------------------------------------------------");
-            
+            System.out.println(
+                    "--------------------------------------------------------------------------------------------");
+
             for (Contexto ctx : tablaSimbolos.getContextos()) {
                 for (Identificador id : ctx.getIdentificadores().values()) {
                     System.out.printf("%-15s %-10s %-12s %-8d %-8d %-15s %-20s%n",
@@ -609,7 +678,7 @@ public class Escucha extends compiladoresBaseListener {
                             id.getDetalles());
                 }
             }
-            
+
         } catch (IOException e) {
             System.err.println("Error al escribir la tabla de símbolos: " + e.getMessage());
         }
@@ -619,7 +688,8 @@ public class Escucha extends compiladoresBaseListener {
         System.out.println("🔍 Debug: Contextos en contextoAuxiliar:");
         for (int i = 0; i < contextoAuxiliar.size(); i++) {
             Contexto contexto = contextoAuxiliar.get(i);
-            System.out.println("Contexto " + i + " tiene " + contexto.getIdentificadores().size() + " identificadores:");
+            System.out
+                    .println("Contexto " + i + " tiene " + contexto.getIdentificadores().size() + " identificadores:");
             for (Identificador id : contexto.getIdentificadores().values()) {
                 System.out.println("  - " + id.getNombre() + " (" + id.getAmbito() + ")");
             }
@@ -633,8 +703,16 @@ public class Escucha extends compiladoresBaseListener {
                 compiladoresParser.CuerpoFuncionContext f = (compiladoresParser.CuerpoFuncionContext) p;
                 if (f.ID() != null) return f.ID().getText();
             }
+
+            if (p instanceof compiladoresParser.DeclaracionFuncionContext) {
+                compiladoresParser.DeclaracionFuncionContext f = (compiladoresParser.DeclaracionFuncionContext) p;
+                if (f.ID() != null) return f.ID().getText();
+            }
             p = p.getParent();
         }
+
+        if (currentAmbito != null && !currentAmbito.trim().isEmpty()) return currentAmbito;
         return "global";
     }
+    
 }

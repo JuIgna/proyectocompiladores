@@ -51,11 +51,9 @@ public class TablaSimbolos {
         }
     }
 
-
     public List<Contexto> getContextos() {
         return contextos;
     }
-
 
     public void identificadorUtilizado(Identificador id) {
         for (int i = contextos.size() - 1; i >= 0; i--) {
@@ -71,7 +69,6 @@ public class TablaSimbolos {
         return contextos.get(contextos.size() - 1).buscarIdentificador(id);
     }
 
-    
     public Identificador buscarIdentificadorPorNombre(String nombre) {
         for (int i = contextos.size() - 1; i >= 0; i--) {
             Identificador encontrado = contextos.get(i).buscarIdentificadorPorNombre(nombre);
@@ -82,25 +79,24 @@ public class TablaSimbolos {
         return null;
     }
 
-
     public void addIdentificador(Identificador identificador) {
         contextos.get(contextos.size() - 1).addIdentificador(identificador);
+    }
+
+    public void addContexto(String nombre) {
+        contextos.add(new Contexto(nombre));
     }
 
     public Contexto getContextoActual() {
         return contextos.get(contextos.size() - 1);
     }
 
-    // Agregar este método al final de la clase TablaSimbolos
-public void addIdentificadorGlobal(Identificador identificador) {
-    // Agregar al contexto global (primer contexto)
-    contextos.get(0).addIdentificador(identificador);
-}
+    public void addIdentificadorGlobal(Identificador identificador) {
+        contextos.get(0).addIdentificador(identificador);
+    }
 
-public Identificador buscarIdentificadorGlobal(Identificador id) {
-    // Buscar solo en el contexto global
-    return contextos.get(0).buscarIdentificador(id);
-}
-
+    public Identificador buscarIdentificadorGlobal(Identificador id) {
+        return contextos.get(0).buscarIdentificador(id);
+    }
 
 }
