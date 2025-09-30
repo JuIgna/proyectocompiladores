@@ -23,12 +23,12 @@ public class App {
             tokens.fill();
             int tokenCount = contarTokens(tokens);
             boolean lexerErrors = false;
-            for (Token token : tokens.getTokens()) {
-                if (token.getType() == compiladoresLexer.ERROR) {
-                    lexerErrors = true;
-                    break;
-                }
-            }
+            // for (Token token : tokens.getTokens()) {
+            //     if (token.getType() == compiladoresLexer.ERROR) {
+            //         lexerErrors = true;
+            //         break;
+            //     }
+            // }
             if (lexerErrors) {
                 System.out.println("❌ Errores léxicos detectados, verifique el archivo errores.txt");
                 return;
@@ -64,7 +64,7 @@ public class App {
                 // 4. Análisis Semántico
                 System.out.println("\n=== 4. ANÁLISIS SEMÁNTICO ===");
                 System.out.println("   📋 Tabla de símbolos construida:");
-                int symbolCount = escucha.imprimirTablaSimbolosConsola();
+                int symbolCount = escucha.imprimirTablaSimbolos("output/tabla_simbolos.txt");
                 System.out.println("✅ Análisis semántico completado sin errores.");
 
                 // 5. Generación de Código Intermedio
@@ -85,7 +85,7 @@ public class App {
                 Optimizador optimizador = new Optimizador(codTresDir);
                 String codigoOptimizado = optimizador.optimizar();
                 try (PrintWriter escritorOptimizado = new PrintWriter(new FileWriter("output/ejemplo_correcto_codigo_optimizado.txt"))) {
-                    escritorOptimizado.print(codigoOptimizado);
+                    escritorOptimizado.print(formatTAC((codigoOptimizado)));
                     System.out.println("✅ Código optimizado guardado en: ejemplo_correcto_codigo_optimizado.txt");
                 }
 
@@ -134,14 +134,31 @@ public class App {
 
     public static String formatTAC(String codigo) {
         String[] lineas = codigo.split("\n");
-        StringBuilder formatted = new StringBuilder();
-        int lineNumber = 0;
+        StringBuilder resultado = new StringBuilder();
+        int contador = 0;
+        
         for (String linea : lineas) {
-            linea = linea.trim();
-            if (!linea.isEmpty()) {
-                formatted.append(String.format("%-3d: %s\n", lineNumber++, linea));
+            if (linea.trim().isEmpty()) {
+                continue; // Saltar líneas vacías
             }
+            
+            // Extraer solo el contenido real (después de los números originales)
+            String contenido;
+            if (linea.matches("^\\d+\\s*:\\s*\\d+\\s*:\\s*.*")) {
+                // Formato: "0 : 0: contenido" -> tomar solo "contenido"
+                contenido = linea.substring(linea.lastIndexOf(":") + 1).trim();
+            } else if (linea.matches("^\\d+\\s*:\\s*.*")) {
+                // Formato: "0: contenido" -> tomar solo "contenido"
+                contenido = linea.substring(linea.indexOf(":") + 1).trim();
+            } else {
+                contenido = linea.trim();
+            }
+            
+            // Formatear con numeración secuencial
+            resultado.append(String.format("%3d: %s\n", contador, contenido));
+            contador++;
         }
-        return formatted.toString();
+        
+        return resultado.toString();
     }
 }

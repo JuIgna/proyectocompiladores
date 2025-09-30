@@ -1,44 +1,44 @@
-0: // Código de tres direcciones generado
-1: PROGRAMA_INICIO:
-2: // Declaración de variables globales
-3: DECLARE contadorGlobal int
-4: DECLARE valorPi double
-5: DECLARE inicial char
-6: DECLARE activo bool
-7: func_sumar:
-8: PARAM a int
-9: PARAM b int
-10: DECLARE resultado int
-11: t1 = a + b
-12: resultado = t1
-13: t2 = contadorGlobal + 1
-14: contadorGlobal = t2
-15: return t1
-16: func_main:
-17: DECLARE estado int
-18: DECLARE temp int
-19: DECLARE numeros[3] int
-20: contadorGlobal = 0
-21: valorPi = 3.14
-22: inicial = 'M'
-23: numeros[0] = 10
-24: numeros[1] = 20
-25: numeros[2] = 30
-26: t3 = numeros[0] + numeros[1]
-27: temp = (((t3) * 2) / 3) % 5
-34: CALL func_sumar, temp, 5
-35: estado = RETURN_VALUE
-36: contadorGlobal = RETURN_VALUE
-37: valorPi = temp
-38: inicial = 'X'
-39: t7 = RETURN_VALUE > 0
-40: if t7 goto L0
-41: goto L1
-42: L0:
-43: DECLARE auxiliar int
-44: t8 = RETURN_VALUE + 10
-45: auxiliar = t8
-46: estado = t8
-47: L1:
-48: return t8
-49: PROGRAMA_FIN:
+  0: // Código de tres direcciones generado
+  1: PROGRAMA_INICIO:
+  2: // Declaración de variables globales
+  3: DECLARE contadorGlobal int
+  4: DECLARE valorPi double
+  5: DECLARE inicial char
+  6: DECLARE activo bool
+  7: func_sumar:
+  8: PARAM a int
+  9: PARAM b int
+ 10: DECLARE resultado int
+ 11: t1 = a + b
+ 12: resultado = t1
+ 13: t2 = contadorGlobal + 1
+ 14: contadorGlobal = t2
+ 15: return resultado
+ 16: func_main:
+ 17: DECLARE estado int
+ 18: DECLARE temp int
+ 19: DECLARE numeros[3] int
+ 20: contadorGlobal = 0
+ 21: valorPi = 3.14
+ 22: inicial = 'M'
+ 23: numeros[0] = 10
+ 24: numeros[1] = 20
+ 25: numeros[2] = 30
+ 26: t3 = numeros[0] + numeros[1]
+ 27: temp = (((t3) * 2) / 3) % 5
+ 28: CALL func_sumar, temp, 5
+ 29: estado = RETURN_VALUE
+ 30: contadorGlobal = estado
+ 31: valorPi = temp
+ 32: inicial = 'X'
+ 33: t7 = estado > 0
+ 34: if t7 goto L0
+ 35: goto L1
+ 36: L0:
+ 37: DECLARE auxiliar int
+ 38: t8 = estado + 10
+ 39: auxiliar = t8
+ 40: estado = t8
+ 41: L1:
+ 42: return estado
+ 43: PROGRAMA_FIN:

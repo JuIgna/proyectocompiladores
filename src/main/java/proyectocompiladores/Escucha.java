@@ -363,7 +363,7 @@ public class Escucha extends compiladoresBaseListener {
             }
         }
 
-        imprimirTablaSimbolos("output/tabla_simbolos.txt");
+        // imprimirTablaSimbolos("output/tabla_simbolos.txt");
 
         if (BalanceLlaves != 0) {
             errores++;
@@ -658,17 +658,19 @@ public class Escucha extends compiladoresBaseListener {
         return symbolCount;
     }
 
-    public void imprimirTablaSimbolos(String archivoSalida) {
+    public int imprimirTablaSimbolos(String archivoSalida) {
+        int simbolos = 0;
         try (PrintWriter escritor = new PrintWriter(new FileWriter(archivoSalida))) {
-            System.out.println("=== TABLA DE SÍMBOLOS ===");
-            System.out.printf("%-15s %-10s %-12s %-8s %-8s %-15s %-20s%n",
-                    "NOMBRE", "TIPO", "CATEGORÍA", "LÍNEA", "COLUMNA", "ÁMBITO", "DETALLES");
-            System.out.println(
-                    "--------------------------------------------------------------------------------------------");
+            // Generar contenido de la tabla
+            StringBuilder contenidoTabla = new StringBuilder();
+            contenidoTabla.append("=== TABLA DE SÍMBOLOS ===\n");
+            contenidoTabla.append(String.format("%-15s %-10s %-12s %-8s %-8s %-15s %-20s%n",
+                    "NOMBRE", "TIPO", "CATEGORÍA", "LÍNEA", "COLUMNA", "ÁMBITO", "DETALLES"));
+            contenidoTabla.append("--------------------------------------------------------------------------------------------\n");
 
             for (Contexto ctx : tablaSimbolos.getContextos()) {
                 for (Identificador id : ctx.getIdentificadores().values()) {
-                    System.out.printf("%-15s %-10s %-12s %-8d %-8d %-15s %-20s%n",
+                    String linea = String.format("%-15s %-10s %-12s %-8d %-8d %-15s %-20s%n",
                             id.getNombre(),
                             id.getTipoDato(),
                             id.getCategoria(),
@@ -676,12 +678,22 @@ public class Escucha extends compiladoresBaseListener {
                             id.getColumna(),
                             id.getAmbito(),
                             id.getDetalles());
+                    contenidoTabla.append(linea);
+                    simbolos++;
                 }
             }
 
+            // Escribir al archivo
+            escritor.print(contenidoTabla);
+            
+            // Imprimir en consola para debug
+            System.out.print(contenidoTabla);
+
+            return simbolos;
         } catch (IOException e) {
             System.err.println("Error al escribir la tabla de símbolos: " + e.getMessage());
         }
+        return simbolos;
     }
 
     public void debugContextos() {
