@@ -3,6 +3,11 @@ package proyectocompiladores;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import org.antlr.v4.gui.TreeViewer;
+import javax.swing.*;
+import java.util.Arrays;
+import java.util.List;
+
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -23,12 +28,7 @@ public class App {
             tokens.fill();
             int tokenCount = contarTokens(tokens);
             boolean lexerErrors = false;
-            // for (Token token : tokens.getTokens()) {
-            //     if (token.getType() == compiladoresLexer.ERROR) {
-            //         lexerErrors = true;
-            //         break;
-            //     }
-            // }
+
             if (lexerErrors) {
                 System.out.println("❌ Errores léxicos detectados, verifique el archivo errores.txt");
                 return;
@@ -57,9 +57,12 @@ public class App {
                 System.out.println("✅ Análisis sintáctico completado.");
                 System.out.println("   📊 Árbol sintáctico generado correctamente");
 
-                // 3. Visualización del AST
+                // 3. Visualización del AST con Swing
                 System.out.println("\n=== 3. VISUALIZACIÓN DEL AST ===");
-                System.out.println("   📊 Ventana del árbol sintáctico abierta");
+
+                ArbolAST arbol = new ArbolAST(tree, parser.getRuleNames());
+                arbol.mostrar();
+                System.out.println("   📊 Ventana de visualización del árbol sintáctico abierta. ");
 
                 // 4. Análisis Semántico
                 System.out.println("\n=== 4. ANÁLISIS SEMÁNTICO ===");
@@ -73,7 +76,8 @@ public class App {
                 Caminante visitor = new Caminante();
                 visitor.visit(tree);
                 String codTresDir = visitor.getCodigoGenerado();
-                try (PrintWriter escritorCodigo = new PrintWriter(new FileWriter("output/ejemplo_correcto_codigo_intermedio.txt"))) {
+                try (PrintWriter escritorCodigo = new PrintWriter(
+                        new FileWriter("output/ejemplo_correcto_codigo_intermedio.txt"))) {
                     escritorCodigo.print(codTresDir);
                     System.out.println("✅ Código intermedio guardado en: ejemplo_correcto_codigo_intermedio.txt");
                     System.out.println("   📝 Código de tres direcciones generado:");
@@ -84,7 +88,8 @@ public class App {
                 System.out.println("\n=== 6. OPTIMIZACIÓN DE CÓDIGO ===");
                 Optimizador optimizador = new Optimizador(codTresDir);
                 String codigoOptimizado = optimizador.optimizar();
-                try (PrintWriter escritorOptimizado = new PrintWriter(new FileWriter("output/ejemplo_correcto_codigo_optimizado.txt"))) {
+                try (PrintWriter escritorOptimizado = new PrintWriter(
+                        new FileWriter("output/ejemplo_correcto_codigo_optimizado.txt"))) {
                     escritorOptimizado.print(formatTAC((codigoOptimizado)));
                     System.out.println("✅ Código optimizado guardado en: ejemplo_correcto_codigo_optimizado.txt");
                 }
@@ -112,12 +117,21 @@ public class App {
         for (Token token : tokens.getTokens()) {
             int tipo = token.getType();
             if (tipo != compiladoresLexer.LC && tipo != compiladoresLexer.BC &&
-                tipo != compiladoresLexer.WS && tipo != compiladoresLexer.ERROR &&
-                tipo != Token.EOF) {
+                    tipo != compiladoresLexer.WS && tipo != compiladoresLexer.ERROR &&
+                    tipo != Token.EOF) {
                 count++;
+                System.out.println("TOKEN: " + count + ": " + token.getText());
             }
         }
         return count;
+
+        // for (Token token : tokens.getTokens()) {
+        // if (token.getType() == compiladoresLexer.ERROR) {
+        // lexerErrors = true;
+        // break;
+        // }
+        // }
+
     }
 
     public static int contarInstrucciones(String codigo) {
@@ -136,12 +150,12 @@ public class App {
         String[] lineas = codigo.split("\n");
         StringBuilder resultado = new StringBuilder();
         int contador = 0;
-        
+
         for (String linea : lineas) {
             if (linea.trim().isEmpty()) {
                 continue; // Saltar líneas vacías
             }
-            
+
             // Extraer solo el contenido real (después de los números originales)
             String contenido;
             if (linea.matches("^\\d+\\s*:\\s*\\d+\\s*:\\s*.*")) {
@@ -153,12 +167,12 @@ public class App {
             } else {
                 contenido = linea.trim();
             }
-            
+
             // Formatear con numeración secuencial
             resultado.append(String.format("%3d: %s\n", contador, contenido));
             contador++;
         }
-        
+
         return resultado.toString();
     }
 }
