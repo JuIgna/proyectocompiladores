@@ -1,39 +1,47 @@
 package proyectocompiladores.contexto;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Contexto {
-    // map que asocia nombres de identificadores a objetos de la clase Identificador
+    public String nombre; // global o nombre de la función
     Map<String, Identificador> identificadores;
 
-
-    // Constructor para inicializar el map de identificadores
     public Contexto() {
-        this.identificadores = new HashMap<>();
+        this.nombre = "global";
+        this.identificadores = new LinkedHashMap<>();
     }
 
-    // añadir un identificador al contexto actual
+    public Contexto(String nombre) {
+        this.nombre = nombre;
+        this.identificadores = new LinkedHashMap<>();
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
     public void addIdentificador(Identificador identificador) {
-        identificadores.put(identificador.nombre, identificador);
-    }
+        identificadores.put(identificador.getNombre(), identificador);
+    }    
 
-    //funcion para buscar el identificador por nombre y tipo de dato o solo por nombre (else if)
     public Identificador buscarIdentificador(Identificador id) {
         for (Identificador identificador : identificadores.values()) {
-            if (identificador.getNombre().equals(id.getNombre()) && identificador.getTipoDato() == id.getTipoDato()) {
-                return identificador;
-            }else if(identificador.getNombre().equals(id.getNombre()) && id.getTipoDato() == null){
+            if (identificador.getNombre().equals(id.getNombre()) &&
+                (id.getTipoDato() == null || identificador.getTipoDato() == id.getTipoDato())) {
                 return identificador;
             }
-
         }
         return null;
     }
 
-    // metodo get para obtener le map
+    public Identificador buscarIdentificadorPorNombre(String nombre){
+        return identificadores.get(nombre);
+    }
+
     public Map<String, Identificador> getIdentificadores() {
         return identificadores;
     }
-
 }
+

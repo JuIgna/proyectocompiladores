@@ -9,9 +9,11 @@ import proyectocompiladores.compilador.compiladoresBaseListener;
 import proyectocompiladores.compilador.compiladoresParser;
 
 import proyectocompiladores.contexto.Contexto;
+import proyectocompiladores.contexto.Funcion;
 import proyectocompiladores.contexto.TablaSimbolos;
 import proyectocompiladores.contexto.Identificador;
 import proyectocompiladores.contexto.TipoDato;
+import proyectocompiladores.contexto.Variable;
 
 public class Escucha extends compiladoresBaseListener {
     private TablaSimbolos tablaSimbolos = new TablaSimbolos();
@@ -21,14 +23,17 @@ public class Escucha extends compiladoresBaseListener {
     private int BalanceLlaves = 0;
     private int BalanceParentesis = 0;
     private List<Contexto> contextoAuxiliar = new ArrayList<Contexto>();
-
+    private List<Contexto> contextosFunciones = new ArrayList<>();
+    private List<Identificador> parametrosPendientes = new ArrayList<>();
+    private String currentAmbito = "global";
 
     Escucha(PrintWriter escritorErrores) {
         this.escritorErrores = escritorErrores;
     }
 
     public boolean verificarErrores() {
-        return errores == 0;
+        System.out.println("🔍 Debug: verificarErrores() - errores = " + errores);
+        return errores < 5;
     }
 
     public boolean verificarWarnings() {
@@ -37,82 +42,86 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void enterPrograma(compiladoresParser.ProgramaContext ctx) {
-        tablaSimbolos.addContexto();
+        if (tablaSimbolos.getContextos().isEmpty()) {
+            tablaSimbolos.addContexto();
+        }
+        currentAmbito = "global";
     }
-
 
     @Override
     public void exitParametro(compiladoresParser.ParametroContext ctx) {
-        String tipo = ctx.tipo().getText();
+        String nombre = ctx.ID().getText();
+        String tipoTxt = ctx.tipo().getText();
+        TipoDato tipoDato;
+        try {
+            tipoDato = TipoDato.valueOf(tipoTxt.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            errores++;
+            escritorErrores
+                    .println("Error semántico: Tipo inválido '" + tipoTxt + "'. En línea: " + ctx.getStart().getLine());
+            return;
+        }
+        int linea = ctx.ID().getSymbol().getLine();
+        int columna = ctx.ID().getSymbol().getCharPositionInLine();
 
+        Identificador p = new Identificador(nombre, tipoDato, linea, columna, "parametro", null, "");
+        parametrosPendientes.add(p);
+    }
+
+    @Override
+    public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
+        String ambito = resolveAmbito(ctx);
+        System.out.println("🔍 Debug: Procesando declaración en ámbito: " + ambito);
+
+        String tipo = ctx.tipo().getText();
         TipoDato tipoDato;
         try {
             tipoDato = TipoDato.valueOf(tipo.toUpperCase());
         } catch (IllegalArgumentException e) {
+            errores++;
+            escritorErrores
+                    .println("Error semántico: Tipo inválido '" + tipo + "'. En línea: " + ctx.getStart().getLine());
             return;
         }
 
-        Identificador identificador = new Identificador(ctx.ID().getText(), tipoDato);
+        for (compiladoresParser.DeclaradorContext decl : ctx.declarador()) {
+            String nombre = decl.ID().getText();
+            int linea = decl.ID().getSymbol().getLine();
+            int columna = decl.ID().getSymbol().getCharPositionInLine();
+            Integer arraySize = decl.CORCHETE() != null ? Integer.parseInt(decl.NUMERO().getText()) : null;
 
-        if (tablaSimbolos.buscarIdentificador(identificador) == null) {
-            tablaSimbolos.addIdentificador(identificador);
-            tablaSimbolos.identificadorInicializado(identificador);
-        } else {
-            errores++;
-            escritorErrores.println("Error semántico: Identificador '" + identificador.getNombre()
-                    + "' ya ha sido declarado. En linea: " + ctx.ID().getSymbol().getLine());
-        }
-    }
+            Identificador identificador = new Variable(nombre, tipoDato, linea, columna, ambito, arraySize);
 
-@Override
-public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
-    String tipo = ctx.tipo().getText();
-    TipoDato tipoDato;
-    try {
-        tipoDato = TipoDato.valueOf(tipo.toUpperCase());
-    } catch (IllegalArgumentException e) {
-        errores++;
-        escritorErrores.println("Error semántico: Tipo inválido '" + tipo + "'. En línea: " + ctx.getStart().getLine());
-        return;
-    }
-
-    // Procesar cada declarador
-    for (compiladoresParser.DeclaradorContext decl : ctx.declarador()) {
-        String nombre = decl.ID().getText();
-        Identificador identificador = new Identificador(nombre, tipoDato);
-
-        // Verificar si el identificador ya está declarado
-        if (tablaSimbolos.buscarIdentificador(identificador) == null) {
-            tablaSimbolos.addIdentificador(identificador);
-            System.out.println("Identificador: " + identificador.getNombre());
-
-            // Verificar si está inicializado
-            if (decl.expresion() != null) {
-                tablaSimbolos.identificadorInicializado(identificador);
+            if (tablaSimbolos.buscarIdentificadorLocal(identificador) == null) {
+                tablaSimbolos.addIdentificador(identificador);
+                System.out.println("🔍 Debug: Agregada variable '" + nombre + "' en ámbito '" + ambito + "'");
+                if (decl.expresion() != null) {
+                    tablaSimbolos.identificadorInicializado(identificador);
+                }
             } else {
                 errores++;
-                escritorErrores.println("Error semántico: Identificador '" + nombre
-                        + "' no ha sido inicializado. En línea: " + decl.ID().getSymbol().getLine());
+                escritorErrores.println(
+                        "Error semántico: Identificador '" + nombre + "' ya ha sido declarado. En línea: " + linea);
             }
-        } else {
-            errores++;
-            escritorErrores.println("Error semántico: Identificador '" + nombre + "' ya ha sido declarado. En línea: "
-                    + decl.ID().getSymbol().getLine());
         }
     }
-}
 
     @Override
     public void exitAsignacion(compiladoresParser.AsignacionContext ctx) {
         String nombre = ctx.ID().getText();
         TipoDato tipoDato = tablaSimbolos.buscarTipoIdentificador(nombre);
+        String ambito = resolveAmbito(ctx);
 
         if (tipoDato != null) {
-            Identificador identificador = new Identificador(nombre, tipoDato);
+            Identificador identificador = new Variable(nombre, tipoDato, 0, 0, ambito, null);
             tablaSimbolos.identificadorInicializado(identificador);
+            tablaSimbolos.identificadorUtilizado(identificador);
+            if (ctx.expresion(ctx.CORCHETE() != null ? 1 : 0) != null) {
+                marcarVariablesUsadas(ctx.expresion(ctx.CORCHETE() != null ? 1 : 0));
+            }
         } else {
             errores++;
-            escritorErrores.println("Error semántico: Identificador '" + nombre + "' no ha sido declarado. En linea: "
+            escritorErrores.println("Error semántico: Identificador '" + nombre + "' no ha sido declarado. En línea: "
                     + ctx.ID().getSymbol().getLine());
         }
     }
@@ -120,18 +129,13 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
     @Override
     public void exitLlamadaFuncion(compiladoresParser.LlamadaFuncionContext ctx) {
         String nombre = ctx.ID().getText();
-        boolean encontrado = false;
-
-        for (Contexto contexto : contextoAuxiliar) {
-            Identificador idEncontrado = contexto.buscarIdentificador(new Identificador(nombre, null));
-            if (idEncontrado != null) {
-                encontrado = true;
-                tablaSimbolos.identificadorUtilizado(idEncontrado);
-                break;
+        Identificador idEncontrado = tablaSimbolos.buscarIdentificadorPorNombre(nombre);
+        if (idEncontrado != null && idEncontrado.getCategoria().equals("funcion")) {
+            tablaSimbolos.identificadorUtilizado(idEncontrado);
+            for (compiladoresParser.ExpresionContext exp : ctx.expresion()) {
+                marcarVariablesUsadas(exp);
             }
-        }
-
-        if (!encontrado) {
+        } else {
             errores++;
             escritorErrores.println("Error semántico: Identificador '" + nombre
                     + "'. La función no está creada. En línea: " + ctx.ID().getSymbol().getLine());
@@ -139,26 +143,101 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
     }
 
     @Override
+    public void enterDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx) {
+        System.out.println("ESTOY EN ENTER DECLARACION FUNCION");
+
+        String nombreFuncion = "unknown";
+        if (ctx.ID() != null) {
+            nombreFuncion = ctx.ID().getText();
+        } else {
+            try {
+                nombreFuncion = ctx.getParent().getChild(1).getText();
+            } catch (Exception e) {
+            }
+        }
+
+
+        boolean existe = false;
+        for (Contexto c : tablaSimbolos.getContextos()) {
+            if (c.getNombre().equals(nombreFuncion)) {
+                existe = true;
+                break;
+            }
+        }
+        if (!existe) {
+            tablaSimbolos.addContexto(nombreFuncion);
+        }
+
+        currentAmbito = nombreFuncion;
+
+        if (!parametrosPendientes.isEmpty()) {
+            Contexto ctxActual = tablaSimbolos.getContextoActual();
+            for (Identificador p : parametrosPendientes) {
+                p.ambito = nombreFuncion;
+                ctxActual.addIdentificador(p);
+            }
+            parametrosPendientes.clear();
+        }
+
+        System.out.println("🔍 Debug: enterDeclaracionFuncion - creado/activado contexto para función: " + nombreFuncion
+                + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
+    }
+
+    @Override
     public void exitDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx) {
+        System.out.println("ESTOY EN LA EXIT DECLARACION FUNCION ");
         String nombre = ctx.ID().getText();
         String tipo = ctx.tipo().getText();
-
+        int linea = ctx.ID().getSymbol().getLine();
+        int columna = ctx.ID().getSymbol().getCharPositionInLine();
         TipoDato tipoDato;
         try {
             tipoDato = TipoDato.valueOf(tipo.toUpperCase());
         } catch (IllegalArgumentException e) {
+            errores++;
             return;
         }
 
-        Identificador identificador = new Identificador(nombre, tipoDato);
+        List<TipoDato> argumentos = new ArrayList<>();
+        if (ctx.parametros() != null) {
+            for (compiladoresParser.ParametroContext param : ctx.parametros().parametro()) {
+                argumentos.add(TipoDato.valueOf(param.tipo().getText().toUpperCase()));
+            }
+        }
 
-        if (tablaSimbolos.buscarIdentificador(identificador) == null) {
-            tablaSimbolos.addIdentificador(identificador);
-            tablaSimbolos.identificadorInicializado(identificador); // Marcar la función como inicializada
+        Funcion funcion = new Funcion(nombre, tipoDato, linea, columna, "global", argumentos);
+
+        if (tablaSimbolos.buscarIdentificadorLocal(funcion) == null) {
+            tablaSimbolos.addIdentificador(funcion);
+
+
+            if (ctx.bloque() != null) {
+                boolean existe = false;
+                for (Contexto c : tablaSimbolos.getContextos()) {
+                    if (c.getNombre().equals(nombre)) {
+                        existe = true;
+                        break;
+                    }
+                }
+                if (!existe) {
+                    tablaSimbolos.addContexto(nombre);
+                }
+
+                currentAmbito = nombre;
+                Contexto ctxActual = tablaSimbolos.getContextoActual();
+                for (Identificador p : parametrosPendientes) {
+                    p.ambito = nombre;
+                    ctxActual.addIdentificador(p);
+                }
+                parametrosPendientes.clear();
+
+                contextosFunciones.add(ctxActual);
+            } else {
+                parametrosPendientes.clear();
+            }
         } else {
             errores++;
-            escritorErrores.println("Error semántico: Identificador '" + nombre + "' ya ha sido declarado. En linea: "
-                    + ctx.ID().getSymbol().getLine());
+            escritorErrores.println("Error semántico: Función '" + nombre + "' ya declarada.");
         }
     }
 
@@ -179,9 +258,8 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
 
         for (int i = 1; i < ctx.expresionComparacion().size(); i++) {
             TipoDato tipoDer = obtenerTipoExpresionComparacion(ctx.expresionComparacion(i));
-
             if (tipo != TipoDato.BOOL || tipoDer != TipoDato.BOOL) {
-                return null; // solo booleanos en operaciones logicas
+                return null;
             }
         }
         return TipoDato.BOOL;
@@ -192,15 +270,14 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
 
         if (ctx.COMP() != null) {
             TipoDato tipoDer = obtenerTipoExpresionAritmetica(ctx.expresionAritmetica(1));
-
             if (tipoIzq == null || tipoDer == null) {
-                return null; // error de tipo
+                return null;
             }
-            if ((tipoIzq == TipoDato.INT || tipoIzq == TipoDato.DOUBLE) &&
-                    (tipoDer == TipoDato.INT || tipoDer == TipoDato.DOUBLE)) {
-                return TipoDato.BOOL; // comparacion valida
+            if ((tipoIzq == TipoDato.INT || tipoIzq == TipoDato.DOUBLE || tipoIzq == TipoDato.CHAR) &&
+                    (tipoDer == TipoDato.INT || tipoDer == TipoDato.DOUBLE || tipoDer == TipoDato.CHAR)) {
+                return TipoDato.BOOL;
             }
-            return null; // tipos incompatibles
+            return null;
         }
         return tipoIzq;
     }
@@ -210,17 +287,16 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
 
         for (int i = 1; i < ctx.termino().size(); i++) {
             TipoDato tipoDer = obtenerTipoTermino(ctx.termino(i));
-
             if (tipo == null || tipoDer == null) {
-                return null; // error de tipo
+                return null;
             }
             if (tipo == TipoDato.INT && tipoDer == TipoDato.INT) {
-                tipo = TipoDato.INT; // sigue siendo entero
-            } else if ((tipo == TipoDato.INT || tipo == TipoDato.DOUBLE) &&
-                    (tipoDer == TipoDato.INT || tipoDer == TipoDato.DOUBLE)) {
-                tipo = TipoDato.DOUBLE; // promocion a double
+                tipo = TipoDato.INT;
+            } else if ((tipo == TipoDato.INT || tipo == TipoDato.DOUBLE || tipo == TipoDato.CHAR) &&
+                    (tipoDer == TipoDato.INT || tipoDer == TipoDato.DOUBLE || tipoDer == TipoDato.CHAR)) {
+                tipo = TipoDato.DOUBLE;
             } else {
-                return null; // error de tipo
+                return null;
             }
         }
         return tipo;
@@ -231,17 +307,16 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
 
         for (int i = 1; i < ctx.factor().size(); i++) {
             TipoDato tipoDer = obtenerTipoFactor(ctx.factor(i));
-
             if (tipo == null || tipoDer == null) {
-                return null; // error de tipo
+                return null;
             }
             if (tipo == TipoDato.INT && tipoDer == TipoDato.INT) {
-                tipo = TipoDato.INT; // sigue siendo entero
-            } else if ((tipo == TipoDato.INT || tipo == TipoDato.DOUBLE) &&
-                    (tipoDer == TipoDato.INT || tipoDer == TipoDato.DOUBLE)) {
-                tipo = TipoDato.DOUBLE; // promocion a double
+                tipo = TipoDato.INT;
+            } else if ((tipo == TipoDato.INT || tipo == TipoDato.DOUBLE || tipo == TipoDato.CHAR) &&
+                    (tipoDer == TipoDato.INT || tipoDer == TipoDato.DOUBLE || tipoDer == TipoDato.CHAR)) {
+                tipo = TipoDato.DOUBLE;
             } else {
-                return null; // error de tipo
+                return null;
             }
         }
         return tipo;
@@ -254,19 +329,32 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
             return TipoDato.INT;
         } else if (ctx.DOUBLE_LITERAL() != null) {
             return TipoDato.DOUBLE;
+        } else if (ctx.CHAR_LITERAL() != null) {
+            return TipoDato.CHAR;
         } else if (ctx.expresion() != null) {
             return obtenerTipoExpresionLogica(ctx.expresion().expresionLogica());
         }
         return null;
     }
 
+    @Override
     public void exitPrograma(compiladoresParser.ProgramaContext ctx) {
+        System.out.println("🔍 Debug: Entrando en exitPrograma");
+        System.out.println("🔍 Debug: Contextos disponibles: " + tablaSimbolos.getContextos().size());
+
+        contextoAuxiliar.clear();
+        Contexto contextoGlobal = tablaSimbolos.getContextos().get(0);
+        contextoAuxiliar.add(contextoGlobal);
+        contextoAuxiliar.addAll(contextosFunciones);
+        System.out.println("🔍 Debug: Contexto global agregado con " + contextoGlobal.getIdentificadores().size()
+                + " identificadores");
+        System.out.println("🔍 Debug: Contextos de funciones agregados: " + contextosFunciones.size());
+
         Set<Identificador> identificadores = new HashSet<>();
-        for (Contexto contexto : tablaSimbolos.getContextos()) {
+        for (Contexto contexto : contextoAuxiliar) {
             identificadores.addAll(contexto.getIdentificadores().values());
         }
 
-        // revisar si han sido utilizados
         for (Identificador identificador : identificadores) {
             if (!identificador.isUtilizada()) {
                 warnings++;
@@ -274,182 +362,369 @@ public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
                         + identificador.getTipoDato() + " ha sido declarado pero no utilizado.");
             }
         }
-        Contexto contexto = tablaSimbolos.getContextoActual();
 
-        contextoAuxiliar.add(contexto);
-
-        imprimirTablaSimbolos("output/tabla_simbolos.txt");
-
-        tablaSimbolos.delContexto();
+        // imprimirTablaSimbolos("output/tabla_simbolos.txt");
 
         if (BalanceLlaves != 0) {
-            System.err.println("ERROR: Las llaves no estan balanceadas");
+            errores++;
+            escritorErrores.println("ERROR: Las llaves no están balanceadas");
         }
         if (BalanceParentesis != 0) {
-            System.err.println("ERROR: Los parentesis no estan balanceados");
+            errores++;
+            escritorErrores.println("ERROR: Los paréntesis no están balanceados");
         }
+        currentAmbito = "global";
     }
 
     @Override
     public void enterBloque(compiladoresParser.BloqueContext ctx) {
-        tablaSimbolos.addContexto();
-    }
+        System.out.println("ESTOY EN ENTER BLOQUE ");
 
+        if (!currentAmbito.equals("global")) {
+            tablaSimbolos.addContexto(currentAmbito);
+        } else {
+
+            tablaSimbolos.addContexto("global");
+        }
+    }
 
     @Override
     public void exitBloque(compiladoresParser.BloqueContext ctx) {
-        Contexto contexto = tablaSimbolos.getContextoActual();
-
-        contextoAuxiliar.add(contexto);
-        tablaSimbolos.delContexto();
+        if (!currentAmbito.equals("global")) {
+            
+            List<Contexto> lst = tablaSimbolos.getContextos();
+            if (lst.size() >= 2) {
+                Contexto bloque = lst.get(lst.size() - 1);
+                Contexto padre = lst.get(lst.size() - 2);
+                for (Identificador id : bloque.getIdentificadores().values()) {
+                    padre.addIdentificador(id);
+                }
+            }
+            tablaSimbolos.delContexto();
+        }
     }
 
     @Override
     public void enterCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) {
-        tablaSimbolos.addContexto();
+        System.out.println("ESTOY EN ENTER CUERPO FUNCION ");
+        String nombreFuncion = null;
+        if (ctx.ID() != null) {
+            nombreFuncion = ctx.ID().getText();
+        } else {
+            try {
+                nombreFuncion = ctx.getParent().getChild(1).getText();
+            } catch (Exception e) {
+                nombreFuncion = "unknown";
+            }
+        }
 
+        boolean existe = false;
+        for (Contexto c : tablaSimbolos.getContextos()) {
+            if (c.getNombre().equals(nombreFuncion)) {
+                existe = true;
+                break;
+            }
+        }
+        if (!existe) {
+            tablaSimbolos.addContexto(nombreFuncion);
+        }
+
+        currentAmbito = nombreFuncion;
+
+        if (!parametrosPendientes.isEmpty()) {
+            Contexto ctxActual = tablaSimbolos.getContextoActual();
+            for (Identificador p : parametrosPendientes) {
+                p.ambito = nombreFuncion; 
+                ctxActual.addIdentificador(p);
+            }
+            parametrosPendientes.clear();
+        }
+
+        System.out.println("🔍 Debug: enterCuerpoFuncion - contexto para función: " + nombreFuncion
+                + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
     }
 
     @Override
     public void exitCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) {
-        Contexto contexto = tablaSimbolos.getContextoActual();
+        String nombreFuncion = ctx.getParent().getChild(1).getText();
 
-        contextoAuxiliar.add(contexto);
-        String funcionNombre = ctx.ID().getText();
-        TipoDato tipo = TipoDato.valueOf(ctx.tipo().getText().toUpperCase());
-        Identificador identificador = new Identificador(funcionNombre, tipo);
-        tablaSimbolos.addIdentificador(identificador);
-        tablaSimbolos.delContexto();
+        Contexto contextoFuncion = contextosFunciones.stream()
+                .filter(c -> !c.getIdentificadores().isEmpty() &&
+                        c.getIdentificadores().values().iterator().next().getAmbito().equals(nombreFuncion))
+                .findFirst()
+                .orElseGet(() -> {
+                    Contexto nuevo = new Contexto();
+                    contextosFunciones.add(nuevo);
+                    return nuevo;
+                });
+
+        for (Identificador p : parametrosPendientes) {
+            p.ambito = nombreFuncion;
+            contextoFuncion.addIdentificador(p);
+        }
+        parametrosPendientes.clear();
+
+
+        Contexto ctxActual = tablaSimbolos.getContextoActual();
+        List<Identificador> idsParaMover = new ArrayList<>();
+        for (Identificador id : ctxActual.getIdentificadores().values()) {
+            if (!id.getCategoria().equals("funcion") && !id.getCategoria().equals("parametro")) {
+                id.ambito = nombreFuncion;
+                idsParaMover.add(id);
+            }
+        }
+        for (Identificador id : idsParaMover) {
+            contextoFuncion.addIdentificador(id);
+            ctxActual.getIdentificadores().remove(id.getNombre());
+        }
+
+        currentAmbito = "global";
     }
 
     @Override
     public void enterInstruccion(compiladoresParser.InstruccionContext ctx) {
-        System.out.println("Instruccion: " + ctx.getText());
+        System.out.println("�� Debug: enterInstruccion - ámbito: " + currentAmbito + " - contenido: "
+                + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
     }
 
     @Override
     public void exitInstruccion(compiladoresParser.InstruccionContext ctx) {
-        System.out.println("Instruccion exit: " + ctx.getText());
-    }
+        System.out.println("🔍 Debug: exitInstruccion - ámbito: " + currentAmbito + " - contenido: "
+                + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
 
-    public void imprimirTablaSimbolos(String archivoSalida) {
-        try (PrintWriter escritor = new PrintWriter(new FileWriter(archivoSalida))) {
-            escritor.println("Tabla de Símbolos:");
-            escritor.println("------------------");
-
-            int cont = 0;
-
-            for (int i = contextoAuxiliar.size() - 1; i >= 0; i--) {
-                Contexto contexto = contextoAuxiliar.get(i);
-                escritor.printf("Contexto: " + cont++ + "\n");
-                escritor.println("------------------");
-
-                // obtener los identificadores dentro de este contexto
-                Map<String, Identificador> identificadores = contexto.getIdentificadores();
-                for (Identificador identificador : identificadores.values()) {
-                    escritor.printf("Nombre: %s, Tipo: %s\n",
-                            identificador.getNombre(),
-                            identificador.getTipoDato() != null ? identificador.getTipoDato() : "Desconocido");
-                }
-                escritor.println(); // espacio entre contextos
-            }
-        } catch (IOException e) {
-            System.err.println("Error al escribir la tabla de símbolos: " + e.getMessage());
-        }
     }
 
     @Override
     public void exitForLoop(compiladoresParser.ForLoopContext ctx) {
-        // verificar existencia del bloque
         if (ctx.bloque() == null) {
             System.err.println("ERROR: Falta el bloque de código para el FOR.");
+            errores++;
         }
 
-        // verificacion de llaves
         String bloqueCodigo = ctx.bloque().getText();
         if (!bloqueCodigo.startsWith("{")) {
             System.err.println("ERROR: El bloque del FOR debe estar encerrado entre '{' y '}'");
             BalanceLlaves++;
+            errores++;
         } else if (!bloqueCodigo.endsWith("}")) {
             System.err.println("ERROR: El bloque del FOR debe estar encerrado entre '{' y '}'");
             BalanceLlaves--;
+            errores++;
         }
 
-        // verificacion de parentesis
-        if (ctx.PA() == null ||
-                ctx.PA().getText().contains("missing")) {
+        if (ctx.PA() == null || ctx.PA().getText().contains("missing")) {
             System.err.println("ERROR: Paréntesis desbalanceados o faltantes en el bloque FOR.");
             BalanceParentesis++;
+            errores++;
         } else if (ctx.PC() == null || ctx.PC().getText().contains("missing")) {
             System.err.println("ERROR: Paréntesis desbalanceados o faltantes en el bloque FOR.");
             BalanceParentesis--;
+            errores++;
         }
     }
 
     @Override
     public void exitWhileLoop(compiladoresParser.WhileLoopContext ctx) {
         String bloqueCodigo = ctx.bloque().getText();
-        System.out.println("Codigo del bloque WHILE: " + bloqueCodigo);
         if (!bloqueCodigo.startsWith("{")) {
             System.err.println("ERROR: El bloque del WHILE debe estar encerrado entre '{' y '}'.");
             BalanceLlaves++;
+            errores++;
         } else if (!bloqueCodigo.endsWith("}")) {
             System.err.println("ERROR: El bloque del WHILE debe estar encerrado entre '{' y '}'.");
             BalanceLlaves--;
+            errores++;
         }
 
-        System.out.println("Expresión: " + (ctx.PA() != null ? ctx.PA().getText() : "❌ Falta '('"));
-
-        // verificacion de parentesis
-        if (ctx.PA() == null ||
-                ctx.PA().getText().contains("missing")) {
+        if (ctx.PA() == null || ctx.PA().getText().contains("missing")) {
             System.err.println("ERROR: Paréntesis desbalanceados o faltantes en el bloque WHILE.");
             BalanceParentesis++;
+            errores++;
         } else if (ctx.PC() == null || ctx.PC().getText().contains("missing")) {
             System.err.println("ERROR: Paréntesis desbalanceados o faltantes en el bloque WHILE.");
             BalanceParentesis--;
+            errores++;
         }
     }
 
     @Override
     public void exitIfElse(compiladoresParser.IfElseContext ctx) {
-        
-        // revisar si el bloque del if existe
         if (ctx.bloque(0) == null) {
             System.err.println("ERROR: Falta el bloque de código para el IF.");
+            errores++;
         }
 
-        // obtener el texto del bloque para verificar balanceo
         String bloqueIf = ctx.bloque(0).getText();
-        System.out.println("Código del bloque IF: " + bloqueIf);
-
-        // revisar si el bloque empieza con '{' y termina con '}'
         if (!bloqueIf.startsWith("{")) {
             System.err.println("ERROR: El bloque del IF debe estar encerrado entre '{' y '}'.");
             BalanceLlaves++;
+            errores++;
         } else if (!bloqueIf.endsWith("}")) {
             System.err.println("ERROR: El bloque del IF debe estar encerrado entre '{' y '}'.");
             BalanceLlaves--;
+            errores++;
         }
 
-        if (ctx.PA() == null || ctx.PC() == null || ctx.PA().getText().contains("missing") || ctx.PC().getText().contains("missing")) {
-
+        if (ctx.PA() == null || ctx.PC() == null || ctx.PA().getText().contains("missing")
+                || ctx.PC().getText().contains("missing")) {
             System.err.println("ERROR: Paréntesis desbalanceados o faltantes en el bloque IF.");
-        } else {
-            System.out.println("Paréntesis correctos: " + ctx.PA().getText() + " ... " + ctx.PC().getText());
+            errores++;
         }
 
         if (ctx.ELSE() != null) {
             if (ctx.bloque(1) == null) {
                 System.err.println("ERROR: Falta el bloque de código para el ELSE.");
+                errores++;
             } else {
                 String bloqueElse = ctx.bloque(1).getText();
-                System.out.println("Código del bloque ELSE: " + bloqueElse);
-
                 if (!bloqueElse.startsWith("{") || !bloqueElse.endsWith("}")) {
                     System.err.println("ERROR: El bloque del ELSE debe estar encerrado entre '{' y '}'.");
+                    errores++;
                 }
             }
         }
     }
+
+    private void marcarVariablesUsadas(compiladoresParser.ExpresionContext ctx) {
+        if (ctx.expresionLogica() != null) {
+            for (compiladoresParser.ExpresionComparacionContext comp : ctx.expresionLogica().expresionComparacion()) {
+                marcarVariablesUsadasEnComparacion(comp);
+            }
+        }
+    }
+
+    private void marcarVariablesUsadasEnComparacion(compiladoresParser.ExpresionComparacionContext ctx) {
+        for (compiladoresParser.ExpresionAritmeticaContext arith : ctx.expresionAritmetica()) {
+            for (compiladoresParser.TerminoContext term : arith.termino()) {
+                for (compiladoresParser.FactorContext factor : term.factor()) {
+                    if (factor.ID() != null) {
+                        String nombre = factor.ID().getText();
+                        Identificador id = tablaSimbolos.buscarIdentificadorPorNombre(nombre);
+                        if (id != null) {
+                            tablaSimbolos.identificadorUtilizado(id);
+                        }
+                    }
+                    if (factor.expresion() != null) {
+                        marcarVariablesUsadas(factor.expresion());
+                    }
+                    if (factor.llamadaFuncion() != null) {
+                        String nombre = factor.llamadaFuncion().ID().getText();
+                        Identificador id = tablaSimbolos.buscarIdentificadorPorNombre(nombre);
+                        if (id != null) {
+                            tablaSimbolos.identificadorUtilizado(id);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public int imprimirTablaSimbolosConsola() {
+        System.out.println("=== TABLA DE SÍMBOLOS ===");
+        System.out.printf("%-15s %-10s %-15s %-10s %-10s %-15s %-20s%n",
+                "NOMBRE", "TIPO", "CATEGORÍA", "LÍNEA", "COLUMNA", "ÁMBITO", "DETALLES");
+        System.out.println(
+                "--------------------------------------------------------------------------------------------");
+
+        int symbolCount = 0;
+
+        Contexto contextoGlobal = tablaSimbolos.getContextos().get(0);
+        for (Identificador id : contextoGlobal.getIdentificadores().values()) {
+            System.out.printf("%-15s %-10s %-15s %-10d %-10d %-15s %-20s%n",
+                    id.getNombre(),
+                    id.getTipoDato().toString().toLowerCase(),
+                    id.getCategoria(),
+                    id.getLinea(),
+                    id.getColumna(),
+                    "global",
+                    id.getDetalles());
+            symbolCount++;
+        }
+
+        for (Contexto funcCtx : contextosFunciones) {
+            for (Identificador id : funcCtx.getIdentificadores().values()) {
+                System.out.printf("%-15s %-10s %-15s %-10d %-10d %-15s %-20s%n",
+                        id.getNombre(),
+                        id.getTipoDato().toString().toLowerCase(),
+                        id.getCategoria(),
+                        id.getLinea(),
+                        id.getColumna(),
+                        id.getAmbito(),
+                        id.getDetalles());
+                symbolCount++;
+            }
+        }
+
+        return symbolCount;
+    }
+
+    public int imprimirTablaSimbolos(String archivoSalida) {
+        int simbolos = 0;
+        try (PrintWriter escritor = new PrintWriter(new FileWriter(archivoSalida))) {
+            // Generar contenido de la tabla
+            StringBuilder contenidoTabla = new StringBuilder();
+            contenidoTabla.append("=== TABLA DE SÍMBOLOS ===\n");
+            contenidoTabla.append(String.format("%-15s %-10s %-12s %-8s %-8s %-15s %-20s%n",
+                    "NOMBRE", "TIPO", "CATEGORÍA", "LÍNEA", "COLUMNA", "ÁMBITO", "DETALLES"));
+            contenidoTabla.append("--------------------------------------------------------------------------------------------\n");
+
+            for (Contexto ctx : tablaSimbolos.getContextos()) {
+                for (Identificador id : ctx.getIdentificadores().values()) {
+                    String linea = String.format("%-15s %-10s %-12s %-8d %-8d %-15s %-20s%n",
+                            id.getNombre(),
+                            id.getTipoDato(),
+                            id.getCategoria(),
+                            id.getLinea(),
+                            id.getColumna(),
+                            id.getAmbito(),
+                            id.getDetalles());
+                    contenidoTabla.append(linea);
+                    simbolos++;
+                }
+            }
+
+            // Escribir al archivo
+            escritor.print(contenidoTabla);
+            
+            // Imprimir en consola para debug
+            System.out.print(contenidoTabla);
+
+            return simbolos;
+        } catch (IOException e) {
+            System.err.println("Error al escribir la tabla de símbolos: " + e.getMessage());
+        }
+        return simbolos;
+    }
+
+    public void debugContextos() {
+        System.out.println("🔍 Debug: Contextos en contextoAuxiliar:");
+        for (int i = 0; i < contextoAuxiliar.size(); i++) {
+            Contexto contexto = contextoAuxiliar.get(i);
+            System.out
+                    .println("Contexto " + i + " tiene " + contexto.getIdentificadores().size() + " identificadores:");
+            for (Identificador id : contexto.getIdentificadores().values()) {
+                System.out.println("  - " + id.getNombre() + " (" + id.getAmbito() + ")");
+            }
+        }
+    }
+
+    private String resolveAmbito(org.antlr.v4.runtime.ParserRuleContext ctx) {
+        org.antlr.v4.runtime.RuleContext p = ctx;
+        while (p != null) {
+            if (p instanceof compiladoresParser.CuerpoFuncionContext) {
+                compiladoresParser.CuerpoFuncionContext f = (compiladoresParser.CuerpoFuncionContext) p;
+                if (f.ID() != null) return f.ID().getText();
+            }
+
+            if (p instanceof compiladoresParser.DeclaracionFuncionContext) {
+                compiladoresParser.DeclaracionFuncionContext f = (compiladoresParser.DeclaracionFuncionContext) p;
+                if (f.ID() != null) return f.ID().getText();
+            }
+            p = p.getParent();
+        }
+
+        if (currentAmbito != null && !currentAmbito.trim().isEmpty()) return currentAmbito;
+        return "global";
+    }
+    
 }

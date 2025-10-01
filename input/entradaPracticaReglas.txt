@@ -1,0 +1,6 @@
+// ejercicio 5
+// x = y + z
+
+
+// ejercicio 14
+if (x > y)

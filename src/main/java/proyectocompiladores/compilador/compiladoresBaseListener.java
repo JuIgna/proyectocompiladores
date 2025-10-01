@@ -89,18 +89,6 @@ public class compiladoresBaseListener implements compiladoresListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLlamadaFuncion(compiladoresParser.LlamadaFuncionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitLlamadaFuncion(compiladoresParser.LlamadaFuncionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -108,6 +96,18 @@ public class compiladoresBaseListener implements compiladoresListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterLlamadaFuncion(compiladoresParser.LlamadaFuncionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitLlamadaFuncion(compiladoresParser.LlamadaFuncionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -6,10 +6,12 @@ fragment CARACTER: [a-zA-Z];
 
 NUMERO: DIGITO+;
 DOUBLE_LITERAL: DIGITO+ '.' DIGITO* | DIGITO* '.' DIGITO+;
+CHAR_LITERAL: '\'' . '\'';
 
 INT: 'int';
 DOUBLE: 'double';
 VOID: 'void';
+CHAR: 'char';
 IF: 'if';
 ELSE: 'else';
 FOR: 'for';
@@ -32,6 +34,8 @@ PA: '(';
 PC: ')';
 LLA: '{';
 LLC: '}';
+CORCHETE: '[';
+CORCHETE_C: ']';
 COMP: '==' | '!=' | '<' | '>' | '<=' | '>=';
 ID: (CARACTER | '_') (CARACTER | DIGITO | '_')*;
 PUNTO: '.';
@@ -46,8 +50,10 @@ WS: [ \t\r\n]+ -> skip;
 // ignorar comentarios
 LC: '//' ~[\r\n]* -> skip;
 BC: '/*' .*? '*/' -> skip;
+ERROR: . ; //c
 
-programa: (cuerpoFuncion | instruccion)* EOF;
+// Cambiar el orden para procesar declaraciones globales primero
+programa: (instruccion | cuerpoFuncion | declaracionFuncion)* EOF;
 
 instrucciones: (instruccion)*;
 
@@ -66,23 +72,24 @@ bloque: LLA instrucciones? LLC;
 
 error: ~LLC+;
 
-declaracionFuncion: tipo ID PA parametros? PC PYC;
+// O mejor aún, unificar las reglas
+declaracionFuncion: tipo ID PA parametros? PC (bloque | PYC);
+cuerpoFuncion: tipo ID PA parametros? PC bloque;
 
 llamadaFuncion: ID PA (expresion (COMA expresion)*)? PC;
-
-cuerpoFuncion: tipo ID PA parametros? PC bloque;
 
 parametros: parametro (COMA parametro)*;
 
 parametro: tipo ID;
 
-tipo: INT | DOUBLE | BOOL | VOID;
+tipo: INT | DOUBLE | BOOL | VOID | CHAR;
 
 //  declaracion: tipo ID (IGUAL expresion)? PYC;
- declaracion: tipo declarador (COMA declarador)* PYC; 
- declarador: ID (IGUAL expresion)?;
+ declaracion: tipo declarador (COMA declarador)* PYC;
 
-asignacion: ID IGUAL expresion PYC;
+ declarador: ID (CORCHETE NUMERO CORCHETE_C)? (IGUAL expresion)?;
+
+asignacion: (ID | ID CORCHETE expresion CORCHETE_C) IGUAL expresion PYC;
 
 estructuraControl: ifElse | whileLoop | forLoop;
 
@@ -129,8 +136,10 @@ termino:
 factor:
     PA expresion PC
     | booleano
+    | ID (CORCHETE expresion CORCHETE_C)
     | ID
     | STRING
+    | CHAR_LITERAL
     | llamadaPrints
     | llamadaFuncion
     | incrementoDecremento

@@ -1,1 +1,4 @@
-Advertencia: Identificador variableGlobal de tipo INT ha sido declarado pero no utilizado.
+Advertencia: Identificador a de tipo INT ha sido declarado pero no utilizado.
+Advertencia: Identificador activo de tipo BOOL ha sido declarado pero no utilizado.
+Advertencia: Identificador main de tipo INT ha sido declarado pero no utilizado.
+Advertencia: Identificador b de tipo INT ha sido declarado pero no utilizado.

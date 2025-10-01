@@ -4,5 +4,6 @@ public enum TipoDato {
     INT,
     DOUBLE,
     BOOL,
-    VOID;
+    VOID,
+    CHAR;
 }
