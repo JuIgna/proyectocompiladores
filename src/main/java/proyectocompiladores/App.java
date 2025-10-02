@@ -47,13 +47,18 @@ public class App {
                 parser.addParseListener(escucha);
                 ParseTree tree = parser.programa();
 
-                boolean hayErroresCriticos = !escucha.verificarErrores() || !manejadorErrores.verificarErrores();
-                if (hayErroresCriticos) {
-                    System.out.println("⚠️ Errores detectados, verifique el archivo errores.txt");
+                boolean erroresSintacticos = !escucha.verificarErrores() || !manejadorErrores.verificarErrores();
+                boolean erroresSemanticos = !escucha.verificarWarnings();
+
+                if (erroresSintacticos) {
+                    System.out.println("⚠️ Errores sintacticos detectados, verifique el archivo errores.txt. Se detiene la compilación. ");
+                    return;
                 }
-                if (!escucha.verificarWarnings()) {
+
+                if (erroresSemanticos) {
                     System.out.println("⚠️ Advertencias detectadas, verifique el archivo errores.txt");
                 }
+
                 System.out.println("✅ Análisis sintáctico completado.");
                 System.out.println("   📊 Árbol sintáctico generado correctamente");
 

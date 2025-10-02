@@ -70,16 +70,16 @@ public class Caminante extends compiladoresBaseVisitor<String> {
 
     @Override
     public String visitAsignacion(compiladoresParser.AsignacionContext ctx) {
-        System.out.println("🔍 DEBUG visitAsignacion: " + ctx.getText());
+        // System.out.println("🔍 DEBUG visitAsignacion: " + ctx.getText());
         
         String nombre = ctx.ID().getText();
-        System.out.println("🔍 DEBUG: Variable destino: " + nombre);
+        // System.out.println("🔍 DEBUG: Variable destino: " + nombre);
         
         String index = ctx.CORCHETE() != null ? "[" + visit(ctx.expresion(0)) + "]" : "";
-        System.out.println("🔍 DEBUG: Índice de array: " + index);
+        // System.out.println("🔍 DEBUG: Índice de array: " + index);
         
         String expresion = visit(ctx.expresion(ctx.CORCHETE() != null ? 1 : 0));
-        System.out.println("🔍 DEBUG: Expresión calculada: " + expresion);
+        // System.out.println("🔍 DEBUG: Expresión calculada: " + expresion);
         
         // Generar la asignación siempre (sin optimización)
         appendInstruccion(nombre + index + " = " + expresion);
@@ -137,16 +137,16 @@ public class Caminante extends compiladoresBaseVisitor<String> {
 
     @Override
     public String visitExpresionAritmetica(compiladoresParser.ExpresionAritmeticaContext ctx) {
-        System.out.println("🔍 DEBUG visitExpresionAritmetica: " + ctx.getText());
-        System.out.println("🔍 DEBUG: Número de términos: " + ctx.termino().size());
+        // System.out.println("🔍 DEBUG visitExpresionAritmetica: " + ctx.getText());
+        // System.out.println("🔍 DEBUG: Número de términos: " + ctx.termino().size());
         
         String temp = visit(ctx.termino(0));
-        System.out.println("🔍 DEBUG: Primer término: " + temp);
+        // System.out.println("🔍 DEBUG: Primer término: " + temp);
     
         for (int i = 1; i < ctx.termino().size(); i++) {
             String temp2 = visit(ctx.termino(i));
             String operador = ctx.getChild(2 * i - 1).getText();
-            System.out.println("🔍 DEBUG: Término " + i + ": " + temp2 + ", Operador: " + operador);
+            // System.out.println("🔍 DEBUG: Término " + i + ": " + temp2 + ", Operador: " + operador);
             
             String nuevaTemp = nuevaTemporal();
             appendInstruccion(nuevaTemp + " = " + temp + " " + operador + " " + temp2);
@@ -158,16 +158,16 @@ public class Caminante extends compiladoresBaseVisitor<String> {
 
     @Override
     public String visitTermino(compiladoresParser.TerminoContext ctx) {
-        System.out.println("🔍 DEBUG visitTermino: " + ctx.getText());
-        System.out.println("🔍 DEBUG: Número de factores: " + ctx.factor().size());
+        // System.out.println("🔍 DEBUG visitTermino: " + ctx.getText());
+        // System.out.println("🔍 DEBUG: Número de factores: " + ctx.factor().size());
         
         String temp = visit(ctx.factor(0));
-        System.out.println("🔍 DEBUG: Primer factor: " + temp);
+        // System.out.println("🔍 DEBUG: Primer factor: " + temp);
     
         for (int i = 1; i < ctx.factor().size(); i++) {
             String temp2 = visit(ctx.factor(i));
             String operador = ctx.getChild(2 * i - 1).getText();
-            System.out.println("🔍 DEBUG: Factor " + i + ": " + temp2 + ", Operador: " + operador);
+            // System.out.println("🔍 DEBUG: Factor " + i + ": " + temp2 + ", Operador: " + operador);
             
             String nuevaTemp = nuevaTemporal();
             appendInstruccion(nuevaTemp + " = " + temp + " " + operador + " " + temp2);
@@ -179,28 +179,28 @@ public class Caminante extends compiladoresBaseVisitor<String> {
 
     @Override
     public String visitFactor(compiladoresParser.FactorContext ctx) {
-        System.out.println("🔍 DEBUG visitFactor: " + ctx.getText());
+        // System.out.println("🔍 DEBUG visitFactor: " + ctx.getText());
         
         // PRIORIDAD 1: Verificar acceso a array ANTES que paréntesis
         if (ctx.ID() != null && ctx.CORCHETE() != null) {
             String id = ctx.ID().getText();
-            System.out.println("🔍 DEBUG: ID encontrado: " + id);
-            System.out.println("🔍 DEBUG: Acceso a array detectado");
+            // System.out.println("🔍 DEBUG: ID encontrado: " + id);
+            // System.out.println("🔍 DEBUG: Acceso a array detectado");
             String index = visit(ctx.expresion());
-            System.out.println("🔍 DEBUG: Índice calculado: " + index);
+            // System.out.println("🔍 DEBUG: Índice calculado: " + index);
             String result = id + "[" + index + "]";
-            System.out.println("🔍 DEBUG: Resultado final: " + result);
+            // System.out.println("🔍 DEBUG: Resultado final: " + result);
             return result;
         }
         // PRIORIDAD 2: Verificar expresión entre paréntesis
         else if (ctx.expresion() != null) {
-            System.out.println("🔍 DEBUG: Procesando expresión entre paréntesis");
+            // System.out.println("🔍 DEBUG: Procesando expresión entre paréntesis");
             return visit(ctx.expresion());
         }
         // PRIORIDAD 3: Variable simple
         else if (ctx.ID() != null) {
             String id = ctx.ID().getText();
-            System.out.println("🔍 DEBUG: Variable simple: " + id);
+            // System.out.println("🔍 DEBUG: Variable simple: " + id);
             return id;
         } else if (ctx.STRING() != null) {
             return ctx.STRING().getText();
@@ -214,7 +214,7 @@ public class Caminante extends compiladoresBaseVisitor<String> {
             return visit(ctx.incrementoDecremento());
         } else if (ctx.NUMERO() != null) {
             String num = (ctx.RESTA() != null ? "-" : "") + ctx.NUMERO().getText();
-            System.out.println("🔍 DEBUG: Número encontrado: " + num);
+            // System.out.println("🔍 DEBUG: Número encontrado: " + num);
             return num;
         } else if (ctx.DOUBLE_LITERAL() != null) {
             return ctx.DOUBLE_LITERAL().getText();

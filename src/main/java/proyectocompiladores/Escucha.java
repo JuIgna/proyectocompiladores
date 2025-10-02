@@ -32,8 +32,8 @@ public class Escucha extends compiladoresBaseListener {
     }
 
     public boolean verificarErrores() {
-        System.out.println("🔍 Debug: verificarErrores() - errores = " + errores);
-        return errores < 5;
+        // System.out.println("🔍 Debug: verificarErrores() - errores = " + errores);
+        return errores == 0; //
     }
 
     public boolean verificarWarnings() {
@@ -71,7 +71,7 @@ public class Escucha extends compiladoresBaseListener {
     @Override
     public void exitDeclaracion(compiladoresParser.DeclaracionContext ctx) {
         String ambito = resolveAmbito(ctx);
-        System.out.println("🔍 Debug: Procesando declaración en ámbito: " + ambito);
+        // System.out.println("🔍 Debug: Procesando declaración en ámbito: " + ambito);
 
         String tipo = ctx.tipo().getText();
         TipoDato tipoDato;
@@ -94,7 +94,7 @@ public class Escucha extends compiladoresBaseListener {
 
             if (tablaSimbolos.buscarIdentificadorLocal(identificador) == null) {
                 tablaSimbolos.addIdentificador(identificador);
-                System.out.println("🔍 Debug: Agregada variable '" + nombre + "' en ámbito '" + ambito + "'");
+                // System.out.println("🔍 Debug: Agregada variable '" + nombre + "' en ámbito '" + ambito + "'");
                 if (decl.expresion() != null) {
                     tablaSimbolos.identificadorInicializado(identificador);
                 }
@@ -144,7 +144,7 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void enterDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx) {
-        System.out.println("ESTOY EN ENTER DECLARACION FUNCION");
+        // System.out.println("ESTOY EN ENTER DECLARACION FUNCION");
 
         String nombreFuncion = "unknown";
         if (ctx.ID() != null) {
@@ -179,13 +179,13 @@ public class Escucha extends compiladoresBaseListener {
             parametrosPendientes.clear();
         }
 
-        System.out.println("🔍 Debug: enterDeclaracionFuncion - creado/activado contexto para función: " + nombreFuncion
-                + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
+        // System.out.println("🔍 Debug: enterDeclaracionFuncion - creado/activado contexto para función: " + nombreFuncion
+        //         + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
     }
 
     @Override
     public void exitDeclaracionFuncion(compiladoresParser.DeclaracionFuncionContext ctx) {
-        System.out.println("ESTOY EN LA EXIT DECLARACION FUNCION ");
+        // System.out.println("ESTOY EN LA EXIT DECLARACION FUNCION ");
         String nombre = ctx.ID().getText();
         String tipo = ctx.tipo().getText();
         int linea = ctx.ID().getSymbol().getLine();
@@ -339,16 +339,16 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void exitPrograma(compiladoresParser.ProgramaContext ctx) {
-        System.out.println("🔍 Debug: Entrando en exitPrograma");
-        System.out.println("🔍 Debug: Contextos disponibles: " + tablaSimbolos.getContextos().size());
+        // System.out.println("🔍 Debug: Entrando en exitPrograma");
+        // System.out.println("🔍 Debug: Contextos disponibles: " + tablaSimbolos.getContextos().size());
 
         contextoAuxiliar.clear();
         Contexto contextoGlobal = tablaSimbolos.getContextos().get(0);
         contextoAuxiliar.add(contextoGlobal);
         contextoAuxiliar.addAll(contextosFunciones);
-        System.out.println("🔍 Debug: Contexto global agregado con " + contextoGlobal.getIdentificadores().size()
-                + " identificadores");
-        System.out.println("🔍 Debug: Contextos de funciones agregados: " + contextosFunciones.size());
+        // System.out.println("🔍 Debug: Contexto global agregado con " + contextoGlobal.getIdentificadores().size()
+        //         + " identificadores");
+        // System.out.println("🔍 Debug: Contextos de funciones agregados: " + contextosFunciones.size());
 
         Set<Identificador> identificadores = new HashSet<>();
         for (Contexto contexto : contextoAuxiliar) {
@@ -378,7 +378,7 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void enterBloque(compiladoresParser.BloqueContext ctx) {
-        System.out.println("ESTOY EN ENTER BLOQUE ");
+        // System.out.println("ESTOY EN ENTER BLOQUE ");
 
         if (!currentAmbito.equals("global")) {
             tablaSimbolos.addContexto(currentAmbito);
@@ -406,7 +406,7 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void enterCuerpoFuncion(compiladoresParser.CuerpoFuncionContext ctx) {
-        System.out.println("ESTOY EN ENTER CUERPO FUNCION ");
+        // System.out.println("ESTOY EN ENTER CUERPO FUNCION ");
         String nombreFuncion = null;
         if (ctx.ID() != null) {
             nombreFuncion = ctx.ID().getText();
@@ -440,8 +440,8 @@ public class Escucha extends compiladoresBaseListener {
             parametrosPendientes.clear();
         }
 
-        System.out.println("🔍 Debug: enterCuerpoFuncion - contexto para función: " + nombreFuncion
-                + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
+        // System.out.println("🔍 Debug: enterCuerpoFuncion - contexto para función: " + nombreFuncion
+        //         + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
     }
 
     @Override
@@ -483,14 +483,14 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void enterInstruccion(compiladoresParser.InstruccionContext ctx) {
-        System.out.println("�� Debug: enterInstruccion - ámbito: " + currentAmbito + " - contenido: "
-                + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
+        // System.out.println("�� Debug: enterInstruccion - ámbito: " + currentAmbito + " - contenido: "
+        //         + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
     }
 
     @Override
     public void exitInstruccion(compiladoresParser.InstruccionContext ctx) {
-        System.out.println("🔍 Debug: exitInstruccion - ámbito: " + currentAmbito + " - contenido: "
-                + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
+        // System.out.println("🔍 Debug: exitInstruccion - ámbito: " + currentAmbito + " - contenido: "
+        //         + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
 
     }
 
@@ -696,8 +696,9 @@ public class Escucha extends compiladoresBaseListener {
         return simbolos;
     }
 
+    // funcion para depurar
     public void debugContextos() {
-        System.out.println("🔍 Debug: Contextos en contextoAuxiliar:");
+        // System.out.println("🔍 Debug: Contextos en contextoAuxiliar:");
         for (int i = 0; i < contextoAuxiliar.size(); i++) {
             Contexto contexto = contextoAuxiliar.get(i);
             System.out

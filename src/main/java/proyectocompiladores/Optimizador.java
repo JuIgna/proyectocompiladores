@@ -106,7 +106,7 @@ public class Optimizador {
         int instruccionesOriginales = contarInstrucciones(codigoOriginal);
         int instruccionesOptimizadas = contarInstrucciones(codigoActual);
 
-        System.out.println("\n=== 6. OPTIMIZACIÓN DE CÓDIGO ===");
+        // System.out.println("\n=== 6. OPTIMIZACIÓN DE CÓDIGO ===");
         System.out.println("   🔧 Aplicando optimizaciones al código intermedio...");
         System.out.println("✅ Optimización completada:");
         System.out.println("   📊 Instrucciones originales: " + instruccionesOriginales);
@@ -186,7 +186,7 @@ public class Optimizador {
         String var = lineaReal.split(" ")[1].trim();
         String varBase = var.contains("[") ? var.substring(0, var.indexOf("[")) : var;
         if (!variablesVivas.contains(varBase) && !variablesVivas.contains(var)) {
-            System.out.println("🔍 Eliminando DECLARE dead: " + linea);
+            // System.out.println("🔍 Eliminando DECLARE dead: " + linea);
             return true;
         }
         return false;
@@ -226,7 +226,7 @@ public class Optimizador {
                 ultimasAsignaciones.put(izquierda, derecha);
             }
         } else {
-            System.out.println("🔍 Eliminando asignación: " + linea);
+            // System.out.println("🔍 Eliminando asignación: " + linea);
         }
 
         return 1;
@@ -276,7 +276,7 @@ public class Optimizador {
             String nuevaLineaReal = izquierda + " = " + fusedDerecha;
             String prefijo = lineas[i - skipCount].substring(0, lineas[i - skipCount].indexOf(":") + 1);
             codigoOptimizado.append(prefijo + " " + nuevaLineaReal).append("\n");
-            System.out.println("🔍 Fusando chain: " + nuevaLineaReal);
+            // System.out.println("🔍 Fusando chain: " + nuevaLineaReal);
             return skipCount + 1;
         }
 
