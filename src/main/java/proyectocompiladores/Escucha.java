@@ -25,7 +25,7 @@ public class Escucha extends compiladoresBaseListener {
     private List<Contexto> contextoAuxiliar = new ArrayList<Contexto>();
     private List<Contexto> contextosFunciones = new ArrayList<>();
     private List<Identificador> parametrosPendientes = new ArrayList<>();
-    private String currentAmbito = "global";
+    private String ambitoActual = "global";
 
     Escucha(PrintWriter escritorErrores) {
         this.escritorErrores = escritorErrores;
@@ -45,7 +45,7 @@ public class Escucha extends compiladoresBaseListener {
         if (tablaSimbolos.getContextos().isEmpty()) {
             tablaSimbolos.addContexto();
         }
-        currentAmbito = "global";
+        ambitoActual = "global";
     }
 
     @Override
@@ -94,7 +94,8 @@ public class Escucha extends compiladoresBaseListener {
 
             if (tablaSimbolos.buscarIdentificadorLocal(identificador) == null) {
                 tablaSimbolos.addIdentificador(identificador);
-                // System.out.println("🔍 Debug: Agregada variable '" + nombre + "' en ámbito '" + ambito + "'");
+                // System.out.println("🔍 Debug: Agregada variable '" + nombre + "' en ámbito '"
+                // + ambito + "'");
                 if (decl.expresion() != null) {
                     tablaSimbolos.identificadorInicializado(identificador);
                 }
@@ -119,12 +120,42 @@ public class Escucha extends compiladoresBaseListener {
             if (ctx.expresion(ctx.CORCHETE() != null ? 1 : 0) != null) {
                 marcarVariablesUsadas(ctx.expresion(ctx.CORCHETE() != null ? 1 : 0));
             }
+
+                // --- VERIFICACIÓN DE CONVERSIÓN DE TIPOS EN ASIGNACIÓN DE FUNCIÓN ---
+                // Si la expresión es una llamada a función, verificar tipo de retorno
+                compiladoresParser.ExpresionContext exprCtx = ctx.expresion(ctx.CORCHETE() != null ? 1 : 0);
+                if (exprCtx != null && exprCtx.getChildCount() > 0) {
+                    // Buscar si el primer hijo es una llamada a función
+                    if (exprCtx.getChild(0) instanceof compiladoresParser.LlamadaFuncionContext) {
+                        compiladoresParser.LlamadaFuncionContext llamada = (compiladoresParser.LlamadaFuncionContext) exprCtx.getChild(0);
+                        String nombreFuncion = llamada.ID().getText();
+                        Identificador idFuncion = tablaSimbolos.buscarIdentificadorPorNombre(nombreFuncion);
+                        if (idFuncion != null && idFuncion.getCategoria().equals("funcion")) {
+                            TipoDato tipoRetorno = idFuncion.getTipoDato();
+                            // Verificar compatibilidad
+                            if (!tiposCompatibles(tipoDato, tipoRetorno)) {
+                                errores++;
+                                escritorErrores.println("Error semántico: Asignación incompatible. Variable '" + nombre + "' de tipo '" + tipoDato + "' no puede recibir el resultado de función '" + nombreFuncion + "' de tipo '" + tipoRetorno + "'. Línea: " + ctx.ID().getSymbol().getLine());
+                            }
+                        }
+                    }
+                }
         } else {
             errores++;
             escritorErrores.println("Error semántico: Identificador '" + nombre + "' no ha sido declarado. En línea: "
                     + ctx.ID().getSymbol().getLine());
         }
     }
+
+        // Función auxiliar para verificar compatibilidad de tipos
+        private boolean tiposCompatibles(TipoDato var, TipoDato ret) {
+            // Permitir asignar int a double, pero no a char, etc.
+            if (var == ret) return true;
+            if (var == TipoDato.DOUBLE && ret == TipoDato.INT) return true;
+            if (var == TipoDato.INT && ret == TipoDato.DOUBLE) return true; // Si permitís conversión implícita
+            // Puedes agregar más reglas según tu política
+            return false;
+        }
 
     @Override
     public void exitLlamadaFuncion(compiladoresParser.LlamadaFuncionContext ctx) {
@@ -156,7 +187,6 @@ public class Escucha extends compiladoresBaseListener {
             }
         }
 
-
         boolean existe = false;
         for (Contexto c : tablaSimbolos.getContextos()) {
             if (c.getNombre().equals(nombreFuncion)) {
@@ -168,7 +198,7 @@ public class Escucha extends compiladoresBaseListener {
             tablaSimbolos.addContexto(nombreFuncion);
         }
 
-        currentAmbito = nombreFuncion;
+        ambitoActual = nombreFuncion;
 
         if (!parametrosPendientes.isEmpty()) {
             Contexto ctxActual = tablaSimbolos.getContextoActual();
@@ -179,8 +209,9 @@ public class Escucha extends compiladoresBaseListener {
             parametrosPendientes.clear();
         }
 
-        // System.out.println("🔍 Debug: enterDeclaracionFuncion - creado/activado contexto para función: " + nombreFuncion
-        //         + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
+        // System.out.println("🔍 Debug: enterDeclaracionFuncion - creado/activado
+        // contexto para función: " + nombreFuncion
+        // + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
     }
 
     @Override
@@ -210,7 +241,6 @@ public class Escucha extends compiladoresBaseListener {
         if (tablaSimbolos.buscarIdentificadorLocal(funcion) == null) {
             tablaSimbolos.addIdentificador(funcion);
 
-
             if (ctx.bloque() != null) {
                 boolean existe = false;
                 for (Contexto c : tablaSimbolos.getContextos()) {
@@ -223,7 +253,7 @@ public class Escucha extends compiladoresBaseListener {
                     tablaSimbolos.addContexto(nombre);
                 }
 
-                currentAmbito = nombre;
+                ambitoActual = nombre;
                 Contexto ctxActual = tablaSimbolos.getContextoActual();
                 for (Identificador p : parametrosPendientes) {
                     p.ambito = nombre;
@@ -340,15 +370,18 @@ public class Escucha extends compiladoresBaseListener {
     @Override
     public void exitPrograma(compiladoresParser.ProgramaContext ctx) {
         // System.out.println("🔍 Debug: Entrando en exitPrograma");
-        // System.out.println("🔍 Debug: Contextos disponibles: " + tablaSimbolos.getContextos().size());
+        // System.out.println("🔍 Debug: Contextos disponibles: " +
+        // tablaSimbolos.getContextos().size());
 
         contextoAuxiliar.clear();
         Contexto contextoGlobal = tablaSimbolos.getContextos().get(0);
         contextoAuxiliar.add(contextoGlobal);
         contextoAuxiliar.addAll(contextosFunciones);
-        // System.out.println("🔍 Debug: Contexto global agregado con " + contextoGlobal.getIdentificadores().size()
-        //         + " identificadores");
-        // System.out.println("🔍 Debug: Contextos de funciones agregados: " + contextosFunciones.size());
+        // System.out.println("🔍 Debug: Contexto global agregado con " +
+        // contextoGlobal.getIdentificadores().size()
+        // + " identificadores");
+        // System.out.println("🔍 Debug: Contextos de funciones agregados: " +
+        // contextosFunciones.size());
 
         Set<Identificador> identificadores = new HashSet<>();
         for (Contexto contexto : contextoAuxiliar) {
@@ -373,15 +406,15 @@ public class Escucha extends compiladoresBaseListener {
             errores++;
             escritorErrores.println("ERROR: Los paréntesis no están balanceados");
         }
-        currentAmbito = "global";
+        ambitoActual = "global";
     }
 
     @Override
     public void enterBloque(compiladoresParser.BloqueContext ctx) {
         // System.out.println("ESTOY EN ENTER BLOQUE ");
 
-        if (!currentAmbito.equals("global")) {
-            tablaSimbolos.addContexto(currentAmbito);
+        if (!ambitoActual.equals("global")) {
+            tablaSimbolos.addContexto(ambitoActual);
         } else {
 
             tablaSimbolos.addContexto("global");
@@ -390,8 +423,8 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void exitBloque(compiladoresParser.BloqueContext ctx) {
-        if (!currentAmbito.equals("global")) {
-            
+        if (!ambitoActual.equals("global")) {
+
             List<Contexto> lst = tablaSimbolos.getContextos();
             if (lst.size() >= 2) {
                 Contexto bloque = lst.get(lst.size() - 1);
@@ -429,19 +462,20 @@ public class Escucha extends compiladoresBaseListener {
             tablaSimbolos.addContexto(nombreFuncion);
         }
 
-        currentAmbito = nombreFuncion;
+        ambitoActual = nombreFuncion;
 
         if (!parametrosPendientes.isEmpty()) {
             Contexto ctxActual = tablaSimbolos.getContextoActual();
             for (Identificador p : parametrosPendientes) {
-                p.ambito = nombreFuncion; 
+                p.ambito = nombreFuncion;
                 ctxActual.addIdentificador(p);
             }
             parametrosPendientes.clear();
         }
 
-        // System.out.println("🔍 Debug: enterCuerpoFuncion - contexto para función: " + nombreFuncion
-        //         + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
+        // System.out.println("🔍 Debug: enterCuerpoFuncion - contexto para función: " +
+        // nombreFuncion
+        // + " (total contextos=" + tablaSimbolos.getContextos().size() + ")");
     }
 
     @Override
@@ -464,7 +498,6 @@ public class Escucha extends compiladoresBaseListener {
         }
         parametrosPendientes.clear();
 
-
         Contexto ctxActual = tablaSimbolos.getContextoActual();
         List<Identificador> idsParaMover = new ArrayList<>();
         for (Identificador id : ctxActual.getIdentificadores().values()) {
@@ -478,24 +511,33 @@ public class Escucha extends compiladoresBaseListener {
             ctxActual.getIdentificadores().remove(id.getNombre());
         }
 
-        currentAmbito = "global";
+        ambitoActual = "global";
     }
 
     @Override
     public void enterInstruccion(compiladoresParser.InstruccionContext ctx) {
-        // System.out.println("�� Debug: enterInstruccion - ámbito: " + currentAmbito + " - contenido: "
-        //         + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
+        // System.out.println("�� Debug: enterInstruccion - ámbito: " + ambitoActual +
+        // " - contenido: "
+        // + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
     }
 
     @Override
     public void exitInstruccion(compiladoresParser.InstruccionContext ctx) {
-        // System.out.println("🔍 Debug: exitInstruccion - ámbito: " + currentAmbito + " - contenido: "
-        //         + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
+        // System.out.println("🔍 Debug: exitInstruccion - ámbito: " + ambitoActual + "
+        // - contenido: "
+        // + ctx.getText().substring(0, Math.min(20, ctx.getText().length())));
 
     }
 
     @Override
     public void exitForLoop(compiladoresParser.ForLoopContext ctx) {
+        if ("global".equals(ambitoActual)) {
+            errores++;
+            escritorErrores.println(
+                    "Error sintáctico: 'for' no puede usarse en contexto global. Línea: " + ctx.getStart().getLine());
+            return;
+        }
+
         if (ctx.bloque() == null) {
             System.err.println("ERROR: Falta el bloque de código para el FOR.");
             errores++;
@@ -525,6 +567,14 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void exitWhileLoop(compiladoresParser.WhileLoopContext ctx) {
+
+        if ("global".equals(ambitoActual)) {
+            errores++;
+            escritorErrores.println("Error sintáctico: 'while' no puede usarse en contexto global. Línea: "
+                    + ctx.getStart().getLine());
+            return;
+        }
+
         String bloqueCodigo = ctx.bloque().getText();
         if (!bloqueCodigo.startsWith("{")) {
             System.err.println("ERROR: El bloque del WHILE debe estar encerrado entre '{' y '}'.");
@@ -549,6 +599,13 @@ public class Escucha extends compiladoresBaseListener {
 
     @Override
     public void exitIfElse(compiladoresParser.IfElseContext ctx) {
+        if ("global".equals(ambitoActual)) {
+            errores++;
+            escritorErrores.println("Error sintáctico: 'if/else' no puede usarse en contexto global. Línea: "
+                    + ctx.getStart().getLine());
+            return;
+        }
+
         if (ctx.bloque(0) == null) {
             System.err.println("ERROR: Falta el bloque de código para el IF.");
             errores++;
@@ -585,7 +642,7 @@ public class Escucha extends compiladoresBaseListener {
         }
     }
 
-    private void marcarVariablesUsadas(compiladoresParser.ExpresionContext ctx) {
+    public void marcarVariablesUsadas(compiladoresParser.ExpresionContext ctx) {
         if (ctx.expresionLogica() != null) {
             for (compiladoresParser.ExpresionComparacionContext comp : ctx.expresionLogica().expresionComparacion()) {
                 marcarVariablesUsadasEnComparacion(comp);
@@ -593,7 +650,7 @@ public class Escucha extends compiladoresBaseListener {
         }
     }
 
-    private void marcarVariablesUsadasEnComparacion(compiladoresParser.ExpresionComparacionContext ctx) {
+    public void marcarVariablesUsadasEnComparacion(compiladoresParser.ExpresionComparacionContext ctx) {
         for (compiladoresParser.ExpresionAritmeticaContext arith : ctx.expresionAritmetica()) {
             for (compiladoresParser.TerminoContext term : arith.termino()) {
                 for (compiladoresParser.FactorContext factor : term.factor()) {
@@ -666,7 +723,8 @@ public class Escucha extends compiladoresBaseListener {
             contenidoTabla.append("=== TABLA DE SÍMBOLOS ===\n");
             contenidoTabla.append(String.format("%-15s %-10s %-12s %-8s %-8s %-15s %-20s%n",
                     "NOMBRE", "TIPO", "CATEGORÍA", "LÍNEA", "COLUMNA", "ÁMBITO", "DETALLES"));
-            contenidoTabla.append("--------------------------------------------------------------------------------------------\n");
+            contenidoTabla.append(
+                    "--------------------------------------------------------------------------------------------\n");
 
             for (Contexto ctx : tablaSimbolos.getContextos()) {
                 for (Identificador id : ctx.getIdentificadores().values()) {
@@ -685,7 +743,7 @@ public class Escucha extends compiladoresBaseListener {
 
             // Escribir al archivo
             escritor.print(contenidoTabla);
-            
+
             // Imprimir en consola para debug
             System.out.print(contenidoTabla);
 
@@ -709,23 +767,26 @@ public class Escucha extends compiladoresBaseListener {
         }
     }
 
-    private String resolveAmbito(org.antlr.v4.runtime.ParserRuleContext ctx) {
+    public String resolveAmbito(org.antlr.v4.runtime.ParserRuleContext ctx) {
         org.antlr.v4.runtime.RuleContext p = ctx;
         while (p != null) {
             if (p instanceof compiladoresParser.CuerpoFuncionContext) {
                 compiladoresParser.CuerpoFuncionContext f = (compiladoresParser.CuerpoFuncionContext) p;
-                if (f.ID() != null) return f.ID().getText();
+                if (f.ID() != null)
+                    return f.ID().getText();
             }
 
             if (p instanceof compiladoresParser.DeclaracionFuncionContext) {
                 compiladoresParser.DeclaracionFuncionContext f = (compiladoresParser.DeclaracionFuncionContext) p;
-                if (f.ID() != null) return f.ID().getText();
+                if (f.ID() != null)
+                    return f.ID().getText();
             }
             p = p.getParent();
         }
 
-        if (currentAmbito != null && !currentAmbito.trim().isEmpty()) return currentAmbito;
+        if (ambitoActual != null && !ambitoActual.trim().isEmpty())
+            return ambitoActual;
         return "global";
     }
-    
+
 }

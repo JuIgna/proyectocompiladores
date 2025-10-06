@@ -41,10 +41,14 @@ public class Caminante extends compiladoresBaseVisitor<String> {
                 visit(instruccion.declaracion());
             } else if (instruccion.declaracionFuncion() != null) {
                 visit(instruccion.declaracionFuncion());
+                // nuevas para asignaciones
+            } else if (instruccion.asignacion() != null && currentFunction == null) {
+                visit(instruccion.asignacion());
+            } else if (instruccion.expresion() != null && currentFunction == null) {
+                visit(instruccion.expresion());
             }
         }
 
-        // Procesar funciones (si parsed as cuerpoFuncion)
         for (compiladoresParser.CuerpoFuncionContext cuerpoFuncion : ctx.cuerpoFuncion()) {
             visit(cuerpoFuncion);
         }
@@ -71,16 +75,16 @@ public class Caminante extends compiladoresBaseVisitor<String> {
     @Override
     public String visitAsignacion(compiladoresParser.AsignacionContext ctx) {
         // System.out.println("🔍 DEBUG visitAsignacion: " + ctx.getText());
-        
+
         String nombre = ctx.ID().getText();
         // System.out.println("🔍 DEBUG: Variable destino: " + nombre);
-        
+
         String index = ctx.CORCHETE() != null ? "[" + visit(ctx.expresion(0)) + "]" : "";
         // System.out.println("🔍 DEBUG: Índice de array: " + index);
-        
+
         String expresion = visit(ctx.expresion(ctx.CORCHETE() != null ? 1 : 0));
         // System.out.println("🔍 DEBUG: Expresión calculada: " + expresion);
-        
+
         // Generar la asignación siempre (sin optimización)
         appendInstruccion(nombre + index + " = " + expresion);
         return nombre + index;
@@ -139,20 +143,21 @@ public class Caminante extends compiladoresBaseVisitor<String> {
     public String visitExpresionAritmetica(compiladoresParser.ExpresionAritmeticaContext ctx) {
         // System.out.println("🔍 DEBUG visitExpresionAritmetica: " + ctx.getText());
         // System.out.println("🔍 DEBUG: Número de términos: " + ctx.termino().size());
-        
+
         String temp = visit(ctx.termino(0));
         // System.out.println("🔍 DEBUG: Primer término: " + temp);
-    
+
         for (int i = 1; i < ctx.termino().size(); i++) {
             String temp2 = visit(ctx.termino(i));
             String operador = ctx.getChild(2 * i - 1).getText();
-            // System.out.println("🔍 DEBUG: Término " + i + ": " + temp2 + ", Operador: " + operador);
-            
+            // System.out.println("🔍 DEBUG: Término " + i + ": " + temp2 + ", Operador: " +
+            // operador);
+
             String nuevaTemp = nuevaTemporal();
             appendInstruccion(nuevaTemp + " = " + temp + " " + operador + " " + temp2);
             temp = nuevaTemp;
         }
-    
+
         return temp;
     }
 
@@ -160,27 +165,28 @@ public class Caminante extends compiladoresBaseVisitor<String> {
     public String visitTermino(compiladoresParser.TerminoContext ctx) {
         // System.out.println("🔍 DEBUG visitTermino: " + ctx.getText());
         // System.out.println("🔍 DEBUG: Número de factores: " + ctx.factor().size());
-        
+
         String temp = visit(ctx.factor(0));
         // System.out.println("🔍 DEBUG: Primer factor: " + temp);
-    
+
         for (int i = 1; i < ctx.factor().size(); i++) {
             String temp2 = visit(ctx.factor(i));
             String operador = ctx.getChild(2 * i - 1).getText();
-            // System.out.println("🔍 DEBUG: Factor " + i + ": " + temp2 + ", Operador: " + operador);
-            
+            // System.out.println("🔍 DEBUG: Factor " + i + ": " + temp2 + ", Operador: " +
+            // operador);
+
             String nuevaTemp = nuevaTemporal();
             appendInstruccion(nuevaTemp + " = " + temp + " " + operador + " " + temp2);
             temp = nuevaTemp;
         }
-    
+
         return temp;
     }
 
     @Override
     public String visitFactor(compiladoresParser.FactorContext ctx) {
         // System.out.println("🔍 DEBUG visitFactor: " + ctx.getText());
-        
+
         // PRIORIDAD 1: Verificar acceso a array ANTES que paréntesis
         if (ctx.ID() != null && ctx.CORCHETE() != null) {
             String id = ctx.ID().getText();
@@ -309,12 +315,12 @@ public class Caminante extends compiladoresBaseVisitor<String> {
     @Override
     public String visitInicializacion(compiladoresParser.InicializacionContext ctx) {
         // comprobar si es una declaracion o una asignacion
-        if (ctx.declaracion() != null) {
+        if (ctx.declaracionSinPyc() != null) {
             // es una declaracion
-            return visit(ctx.declaracion());
-        } else if (ctx.asignacion() != null) {
+            return visit(ctx.declaracionSinPyc());
+        } else if (ctx.asignacionSinPyc() != null) {
             // es una asignacion
-            return visit(ctx.asignacion());
+            return visit(ctx.asignacionSinPyc());
         } else {
             // caso inesperado
             return null;
@@ -337,12 +343,8 @@ public class Caminante extends compiladoresBaseVisitor<String> {
     public String visitIncrementoDecremento(compiladoresParser.IncrementoDecrementoContext ctx) {
         String id = ctx.ID().getText();
         String op = ctx.INCREMENTO() != null ? "+" : "-";
-        String temporal = nuevaTemporal();
-        appendInstruccion(temporal + " = " + id);
-        String temporal2 = nuevaTemporal();
-        appendInstruccion(temporal2 + " = " + temporal + " " + op + " 1");
-        appendInstruccion(id + " = " + temporal2);
-        return temporal;
+        appendInstruccion(id + " = " + id + " " + op + " 1");
+        return id;
     }
 
     @Override
@@ -388,7 +390,7 @@ public class Caminante extends compiladoresBaseVisitor<String> {
         return null;
     }
 
-    private TipoDato obtenerTipoDato(String tipo) {
+    public TipoDato obtenerTipoDato(String tipo) {
         switch (tipo) {
             case "int":
                 return TipoDato.INT;
@@ -442,7 +444,7 @@ public class Caminante extends compiladoresBaseVisitor<String> {
         return null;
     }
 
-    private void appendInstruccion(String instruccion) {
+    public void appendInstruccion(String instruccion) {
         codigoTresDirecciones.append(instruccionCounter++).append(": ").append(instruccion).append("\n");
     }
 

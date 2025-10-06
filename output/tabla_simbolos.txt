@@ -5,12 +5,14 @@ contadorGlobal  INT        variable     5        4        global          [priva
 valorPi         DOUBLE     variable     6        7        global          [private]           
 inicial         CHAR       variable     7        5        global          [private]           
 activo          BOOL       variable     8        5        global          [private]           
-resultado       INT        variable     12       8        sumar           [private]           
-sumar           INT        funcion      11       4        global          [private] [int, int]
-a               INT        parametro    11       14       sumar                               
-b               INT        parametro    11       21       sumar                               
-estado          INT        variable     20       8        main            [private]           
-temp            INT        variable     21       8        main            [private]           
-numeros         INT        variable     22       8        main            [private] [arr:3]   
-auxiliar        INT        variable     50       12       main            [private]           
-main            INT        funcion      19       4        global          [private]           
+resultado       INT        variable     13       8        sumar           [private]           
+sumar           INT        funcion      12       4        global          [private] [int, int]
+a               INT        variable     24       8        main            [private]           
+b               INT        parametro    12       21       sumar                               
+estado          INT        variable     21       8        main            [private]           
+temp            INT        variable     22       8        main            [private]           
+numeros         INT        variable     23       8        main            [private] [arr:3]   
+c               CHAR       variable     25       9        main            [private]           
+auxiliar        INT        variable     53       12       main            [private]           
+i               INT        variable     62       8        main            [private]           
+main            INT        funcion      20       4        global          [private]           

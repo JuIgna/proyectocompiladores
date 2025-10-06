@@ -101,9 +101,12 @@ forLoop:
     FOR PA inicializacion? PYC condicion? PYC actualizacion? PC bloque;
 
 inicializacion:
-    declaracion
-    | asignacion
+    declaracionSinPyc
+    | asignacionSinPyc
     ;
+
+declaracionSinPyc: tipo declarador (COMA declarador)*;
+asignacionSinPyc: (ID | ID CORCHETE expresion CORCHETE_C) IGUAL expresion;
 
 condicion:
     expresion

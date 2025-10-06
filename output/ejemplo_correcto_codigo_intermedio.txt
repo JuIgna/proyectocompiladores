@@ -18,33 +18,57 @@
 17: DECLARE estado int
 18: DECLARE temp int
 19: DECLARE numeros[3] int
-20: contadorGlobal = 0
-21: valorPi = 3.14
-22: inicial = 'M'
-23: numeros[0] = 10
-24: numeros[1] = 20
-25: numeros[2] = 30
-26: t3 = numeros[0] + numeros[1]
-27: temp = t3
-28: t4 = temp * 2
-29: temp = t4
-30: t5 = temp / 3
-31: temp = t5
-32: t6 = temp % 5
-33: temp = t6
-34: CALL func_sumar, temp, 5
-35: estado = RETURN_VALUE
-36: contadorGlobal = estado
-37: valorPi = temp
-38: inicial = 'X'
-39: t7 = estado > 0
-40: if t7 goto L0
-41: goto L1
-42: L0:
-43: DECLARE auxiliar int
-44: t8 = estado + 10
-45: auxiliar = t8
-46: estado = auxiliar
-47: L1:
-48: return estado
-49: PROGRAMA_FIN:
+20: DECLARE a int
+21: a = 300
+22: DECLARE c char
+23: c = a
+24: contadorGlobal = 0
+25: valorPi = 3.14
+26: inicial = 'M'
+27: numeros[0] = 10
+28: numeros[1] = 20
+29: numeros[2] = 30
+30: t3 = numeros[0] + numeros[1]
+31: temp = t3
+32: t4 = temp * 2
+33: temp = t4
+34: t5 = temp / 3
+35: temp = t5
+36: t6 = temp % 5
+37: temp = t6
+38: CALL func_sumar, temp, 5
+39: estado = RETURN_VALUE
+40: contadorGlobal = estado
+41: valorPi = temp
+42: inicial = 'X'
+43: t7 = estado > 0
+44: if t7 goto L0
+45: goto L1
+46: L0:
+47: DECLARE auxiliar int
+48: t8 = estado + 10
+49: auxiliar = t8
+50: estado = auxiliar
+51: L1:
+52: L2:
+53: if t7 goto L3
+54: goto L4
+55: L3:
+56: t9 = estado + 1
+57: estado = t9
+58: goto L2
+59: L4:
+60: DECLARE i int
+61: i = 0
+62: L5:
+63: t10 = i < 3
+64: if t10 goto L6
+65: goto L7
+66: L6:
+67: estado = t9
+68: i = i + 1
+69: i
+70: goto L5
+71: L7:
+72: return estado
+73: PROGRAMA_FIN:

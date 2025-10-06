@@ -125,6 +125,18 @@ public interface compiladoresVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitInicializacion(compiladoresParser.InicializacionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#declaracionSinPyc}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclaracionSinPyc(compiladoresParser.DeclaracionSinPycContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link compiladoresParser#asignacionSinPyc}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAsignacionSinPyc(compiladoresParser.AsignacionSinPycContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link compiladoresParser#condicion}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

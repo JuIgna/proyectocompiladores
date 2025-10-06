@@ -52,7 +52,6 @@ LC: '//' ~[\r\n]* -> skip;
 BC: '/*' .*? '*/' -> skip;
 ERROR: . ; //c
 
-// Cambiar el orden para procesar declaraciones globales primero
 programa: (instruccion | cuerpoFuncion | declaracionFuncion)* EOF;
 
 instrucciones: (instruccion)*;
@@ -72,7 +71,6 @@ bloque: LLA instrucciones? LLC;
 
 error: ~LLC+;
 
-// O mejor aún, unificar las reglas
 declaracionFuncion: tipo ID PA parametros? PC (bloque | PYC);
 cuerpoFuncion: tipo ID PA parametros? PC bloque;
 
@@ -101,9 +99,12 @@ forLoop:
     FOR PA inicializacion? PYC condicion? PYC actualizacion? PC bloque;
 
 inicializacion:
-    declaracion
-    | asignacion
+    declaracionSinPyc
+    | asignacionSinPyc
     ;
+
+declaracionSinPyc: tipo declarador (COMA declarador)*;
+asignacionSinPyc: (ID | ID CORCHETE expresion CORCHETE_C) IGUAL expresion;
 
 condicion:
     expresion

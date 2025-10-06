@@ -198,6 +198,26 @@ public interface compiladoresListener extends ParseTreeListener {
 	 */
 	void exitInicializacion(compiladoresParser.InicializacionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link compiladoresParser#declaracionSinPyc}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclaracionSinPyc(compiladoresParser.DeclaracionSinPycContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link compiladoresParser#declaracionSinPyc}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclaracionSinPyc(compiladoresParser.DeclaracionSinPycContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link compiladoresParser#asignacionSinPyc}.
+	 * @param ctx the parse tree
+	 */
+	void enterAsignacionSinPyc(compiladoresParser.AsignacionSinPycContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link compiladoresParser#asignacionSinPyc}.
+	 * @param ctx the parse tree
+	 */
+	void exitAsignacionSinPyc(compiladoresParser.AsignacionSinPycContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link compiladoresParser#condicion}.
 	 * @param ctx the parse tree
 	 */

@@ -7,6 +7,7 @@ double valorPi;
 char inicial;
 bool activo;
 
+
 // Función simple que retorna valor
 int sumar(int a, int b) {
     int resultado;
@@ -20,6 +21,8 @@ int main() {
     int estado;
     int temp;
     int numeros[3];
+    int a = 300;
+    char c = a;
     
     // Inicializar variables globales
     contadorGlobal = 0;
@@ -50,6 +53,15 @@ int main() {
         int auxiliar;
         auxiliar = estado + 10;
         estado = auxiliar;
+    }
+
+    while (estado > 0){
+        estado = estado + 1;
+    }
+    
+    int i=0;
+    for (i=0; i<3; i++){
+        estado = estado + 1;
     }
     
     return estado;

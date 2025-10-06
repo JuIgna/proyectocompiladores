@@ -29,7 +29,7 @@ public class Optimizador {
         String codigoActual = codigoOriginal;
         String codigoAnterior = "";
         int iteraciones = 0;
-        int maxIteraciones = 10;
+        int maxIteraciones = 1;
 
         while (!codigoActual.equals(codigoAnterior) && iteraciones < maxIteraciones) {
             iteraciones++;
@@ -122,7 +122,7 @@ public class Optimizador {
         return codigoActual;
     }
 
-    private void analizarVariablesVivas(String[] lineas) {
+    public void analizarVariablesVivas(String[] lineas) {
         String funcionActual = null;
         Map<String, String> returnVarPorFuncion = new HashMap<>();
 
@@ -182,7 +182,7 @@ public class Optimizador {
         variablesVivas.addAll(variablesPrograma);
     }
 
-    private boolean procesarDeclare(String linea, String lineaReal) {
+    public boolean procesarDeclare(String linea, String lineaReal) {
         String var = lineaReal.split(" ")[1].trim();
         String varBase = var.contains("[") ? var.substring(0, var.indexOf("[")) : var;
         if (!variablesVivas.contains(varBase) && !variablesVivas.contains(var)) {
@@ -192,7 +192,7 @@ public class Optimizador {
         return false;
     }
 
-    private int procesarAsignacion(String[] lineas, int i) {
+    public int procesarAsignacion(String[] lineas, int i) {
         String linea = lineas[i].trim();
         String lineaReal = extraerLineaReal(linea);
 
@@ -221,7 +221,7 @@ public class Optimizador {
         if (lineaOptimizada != null) {
             String prefijo = linea.substring(0, linea.indexOf(":") + 1);
             codigoOptimizado.append(prefijo + " " + lineaOptimizada).append("\n");
-            
+
             if (variablesPrograma.contains(izquierda)) {
                 ultimasAsignaciones.put(izquierda, derecha);
             }
@@ -232,58 +232,31 @@ public class Optimizador {
         return 1;
     }
 
-    private int intentarFusionCadena(String[] lineas, int i, String izquierda, String derecha) {
-        String fusedDerecha = derecha;
-        int skipCount = 0;
-        boolean fused = false;
+    public int intentarFusionCadena(String[] lineas, int i, String izquierda, String derecha) {
+        if (!izquierda.startsWith("t")) {
+            return 1; // solo aplicar a temporales
+        }
 
-        while (i + 2 < lineas.length) {
-            String sigLinea = lineas[i + 1].trim();
-            String sigLineaReal = extraerLineaReal(sigLinea);
-            String sigLinea2 = lineas[i + 2].trim();
-            String sigLinea2Real = extraerLineaReal(sigLinea2);
+        if (i + 1 < lineas.length) {
+            String sigLinea = extraerLineaReal(lineas[i + 1].trim());
+            if (sigLinea.contains("=")) {
+                String[] partesSig = sigLinea.split("=");
+                String izqSig = partesSig[0].trim();
+                String derSig = partesSig[1].trim();
 
-            if (sigLineaReal.contains("=") && sigLinea2Real.contains("=")) {
-                String izqSig = sigLineaReal.split("=")[0].trim();
-                String derSig = sigLineaReal.split("=")[1].trim().replace(";", "");
-                String izqSig2 = sigLinea2Real.split("=")[0].trim();
-                String derSig2 = sigLinea2Real.split("=")[1].trim().replace(";", "");
-
-                int opIndex = derSig.indexOf(izquierda);
-                if (opIndex != -1 && izqSig.startsWith("t") && derSig.contains(izquierda)
-                        && izqSig2.equals(izquierda) && derSig2.equals(izqSig)) {
-                    String operadorPart = derSig.substring(opIndex + izquierda.length()).trim();
-                    String[] opParts = operadorPart.split(" ", 2);
-                    if (opParts.length == 2) {
-                        String operador = opParts[0];
-                        String operando = opParts[1];
-                        fusedDerecha = "(" + fusedDerecha + ") " + operador + " " + operando;
-                        skipCount += 2;
-                        fused = true;
-                        i += 2;
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
+                if (derSig.equals(izquierda)) {
+                    // fusionar: en vez de t1 = ..., x = t1 → x = ...
+                    String nuevaLinea = izqSig + " = " + derecha;
+                    String prefijo = lineas[i].substring(0, lineas[i].indexOf(":") + 1);
+                    codigoOptimizado.append(prefijo + " " + nuevaLinea).append("\n");
+                    return 2; // nos saltamos dos líneas
                 }
-            } else {
-                break;
             }
         }
-
-        if (fused) {
-            String nuevaLineaReal = izquierda + " = " + fusedDerecha;
-            String prefijo = lineas[i - skipCount].substring(0, lineas[i - skipCount].indexOf(":") + 1);
-            codigoOptimizado.append(prefijo + " " + nuevaLineaReal).append("\n");
-            // System.out.println("🔍 Fusando chain: " + nuevaLineaReal);
-            return skipCount + 1;
-        }
-
-        return 0;
+        return 1; // no fusiona
     }
 
-    private String optimizarAsignacion(String linea, Map<String, String> copias, Set<String> variablesVivas) {
+    public String optimizarAsignacion(String linea, Map<String, String> copias, Set<String> variablesVivas) {
         String[] partes = linea.split("=");
         if (partes.length != 2)
             return linea;
@@ -332,7 +305,7 @@ public class Optimizador {
         return izquierda + " = " + derecha;
     }
 
-    private String aplicarPropagacionCopias(String linea, Map<String, String> copias) {
+    public String aplicarPropagacionCopias(String linea, Map<String, String> copias) {
         String resultado = linea;
 
         Map<String, String> copiasFiltradas = new HashMap<>(copias);
@@ -346,7 +319,7 @@ public class Optimizador {
         return resultado;
     }
 
-    private String procesarReturn(String lineaReal) {
+    public String procesarReturn(String lineaReal) {
         if (!lineaReal.contains(" ")) {
             return lineaReal;
         }
@@ -372,7 +345,7 @@ public class Optimizador {
         return "return " + resultado;
     }
 
-    private String extraerLineaReal(String linea) {
+    public String extraerLineaReal(String linea) {
         if (linea.matches("\\d+:\\s+.*")) {
             return linea.substring(linea.indexOf(":") + 1).trim();
         }
